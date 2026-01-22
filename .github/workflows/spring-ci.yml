@@ -11,7 +11,7 @@
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: '21'
+          java-version: '21.0.7'
           distribution: 'temurin'  # AdoptOpenJDK/Temurin 사용 예시
           java-package: 'jdk-headless'   # 경량화
       - name: Mvn Package
