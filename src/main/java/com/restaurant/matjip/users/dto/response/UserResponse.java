@@ -10,15 +10,15 @@ public class UserResponse {
 
     private Long id;
     private String email;
-//    private String name;
-    private User.Role role;
+    private String role;
+    private String status;
 
     public static UserResponse from(User user) {
         return new UserResponse(
                 user.getId(),
                 user.getEmail(),
-//                user.getName(),
-                user.getRole()
+                user.getRole().name(),
+                user.getStatus().name()
         );
     }
 }

@@ -7,13 +7,16 @@ import lombok.Getter;
 @Getter
 public class UserCreateRequest {
 
-    @Email
+
     @NotBlank
     private String email;
 
     @NotBlank
-    private String name;
+    private String password;
 
     @NotBlank
-    private String password;
+    private String role;   // "USER" or "ADMIN"
+
+    @NotBlank
+    private String status; // "ACTIVE", "BLOCKED", "DELETED"
 }

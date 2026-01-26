@@ -25,9 +25,9 @@ public class UserService {
     public UserResponse create(UserCreateRequest request) {
         User user = User.builder()
                 .email(request.getEmail())
-                //.name(request.getName())
-                //.password(passwordEncoder.encode(request.getPassword()))
-                //.role("USER")
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(User.Role.valueOf(request.getRole()))
+                .status(User.Status.valueOf(request.getStatus()))
                 .build();
         return UserResponse.from(userRepository.save(user));
     }
