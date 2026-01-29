@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * UserController 클래스
+ * - 유저의 정보를 등록 조회 수정 삭제하는 클래스
+ * 작성자: Shawn Lee
+ * 작성일: 2026-01-29
+ */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -23,7 +29,7 @@ public class UserController {
     private final UserService userService;
 
     // -------------------------
-    // 1 회원 생성
+    // 1 회원 생성(프론트 회원가입 화면)
     // -------------------------
     @PostMapping
     public ApiResponse<UserResponse> createUser(
@@ -32,7 +38,7 @@ public class UserController {
     }
 
     // -------------------------
-    // 2️ 회원 단일 조회
+    // todo : 2️ 회원 단일 조회
     // -------------------------
     @GetMapping("/{id}")
     public ApiResponse<UserResponse> getUser(
@@ -41,7 +47,7 @@ public class UserController {
     }
 
     // -------------------------
-    // 3️ 회원 전체 조회
+    // todo : 3️ 회원 전체 조회
     // -------------------------
     @GetMapping
     public ApiResponse<List<UserResponse>> getAllUsers() {
@@ -49,7 +55,7 @@ public class UserController {
     }
 
     // -------------------------
-    // 4️ 회원 정보 수정
+    // todo : 4️ 회원 정보 수정
     // -------------------------
     @PutMapping("/{id}")
     public ApiResponse<UserResponse> updateUser(
@@ -59,7 +65,7 @@ public class UserController {
     }
 
     // -------------------------
-    // 5️ 회원 삭제
+    // todo : 5️ 회원 삭제 (프론트 회원 탈퇴 화면)
     // -------------------------
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteUser(@PathVariable Long id) {
