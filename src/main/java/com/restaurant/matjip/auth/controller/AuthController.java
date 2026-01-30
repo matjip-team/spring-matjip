@@ -14,7 +14,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,12 +46,21 @@ public class AuthController {
             String accessToken = jwtUtil.generateAccessToken(user.getEmail());
             String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
+            // 권한 문자열 리스트로 변환
+            List<String> roles = user.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+
             jwtUtil.addTokensToCookie(response, accessToken, refreshToken);
 
             return ApiResponse.success(
                     LoginResponse.builder()
-                    .email(user.getEmail())
-                    .build()
+                            .id(user.getId())
+                            .email(user.getEmail())
+                            .name(user.getName())
+                            .nickname(user.getNickname())
+                            .roles(roles)
+                            .build()
             );
 
         } catch (AuthenticationException e) { // BadCredentials, Disabled 등 모두 상속

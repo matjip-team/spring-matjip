@@ -1,5 +1,7 @@
 package com.restaurant.matjip.users.service;
 
+import com.restaurant.matjip.users.constant.UserRole;
+import com.restaurant.matjip.users.constant.UserStatus;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.dto.request.UserCreateRequest;
 import com.restaurant.matjip.users.dto.response.UserResponse;
@@ -36,8 +38,8 @@ public class UserService {
                 .name(request.getName())
                 .nickname(request.getNickname())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(User.Role.valueOf(request.getRole()))
-                .status(User.Status.valueOf(request.getStatus()))
+                .role(UserRole.USER)
+                .status(UserStatus.ACTIVE)
                 .build();
         return UserResponse.from(userRepository.save(user));
     }
@@ -67,8 +69,6 @@ public class UserService {
                 .id(user.getId())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(User.Role.valueOf(request.getRole()))
-                .status(User.Status.valueOf(request.getStatus()))
                 .build();
         return UserResponse.from(userRepository.save(user));
     }

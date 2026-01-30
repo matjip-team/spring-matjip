@@ -160,7 +160,7 @@ public class JwtUtil {
 
         Cookie refreshCookie = new Cookie(refreshTokenName, null);
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
+        refreshCookie.setPath("/auth/refresh");
         refreshCookie.setMaxAge(0); //MaxAge=0 → 쿠키 즉시 삭제
         response.addCookie(refreshCookie);
     }
