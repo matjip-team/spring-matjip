@@ -14,14 +14,14 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class UserInfoRequest {
 
-    @NotBlank(message = "{error.validation.user.nickname.required}")
+    @NotBlank(message = "{error.validation.profile.nickname.length}")
     @Size(max = 255)
     private String nickname;
 
     @Size(min = 8, max = 100, message = "{error.validation.user.password.length}") // 해시 길이 기준 고려, 최소 8자
     private String password;
 
-    @Size(max = 4000)
+    @Size(max = 4000, message = "{error.validation.profile.bio.length}")
     private String bio;
 
     @Size(max = 500)

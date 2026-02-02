@@ -6,6 +6,7 @@ import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
 import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
 import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
 import com.restaurant.matjip.mypage.service.MyPageService;
+import com.restaurant.matjip.users.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,14 +30,14 @@ public class MyPageController {
         return myPageService.getUserReviews(1L);
     }
 
-    @GetMapping("/userInfo")
-    public UserInfoResponse getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return myPageService.getUserInfo(1L);
+    @GetMapping("/profile")
+    public ApiResponse<UserInfoResponse> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ApiResponse.success(myPageService.getUserInfo(1L));
     }
 
     @PutMapping("/profile")
     public ApiResponse<Void> updateProfile(
-            @ModelAttribute  UserInfoRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+            @ModelAttribute @Valid UserInfoRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
         myPageService.updateProfile(1L,request);
 
