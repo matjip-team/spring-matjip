@@ -1,6 +1,8 @@
 package com.restaurant.matjip.users.domain;
 
 import com.restaurant.matjip.common.domain.BaseEntity;
+import com.restaurant.matjip.users.constant.UserRole;
+import com.restaurant.matjip.users.constant.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,17 +33,10 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = Role.USER;
+    private UserRole role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.ACTIVE;
+    private UserStatus status;
 
-    public enum Role {
-        USER, ADMIN
-    }
-
-    public enum Status {
-        ACTIVE, BLOCKED, DELETED
-    }
 }

@@ -8,16 +8,17 @@ spring:
     password: mysql
     driver-class-name: com.mysql.cj.jdbc.Driver
     database-platform: org.hibernate.dialect.MySQL8Dialect #사용할 DB 종류와 버전
+    initialization-mode: always # 애플리케이션 시작 시 schema.sql / data.sql 파일을 항상 실행
 
   jpa:
     hibernate:
-      ddl-auto: update             # 개발에서는 테이블 자동 업데이트
+      ddl-auto: create             # 개발에서는 테이블 자동 업데이트
     properties:
       hibernate:
         show_sql: false             # SQL 콘솔 출력
         format_sql: true           # 보기 좋게 포맷
         highlight_sql: true
-    defer-datasource-initialization: true
+    defer-datasource-initialization: update
 
   sql:
     init:

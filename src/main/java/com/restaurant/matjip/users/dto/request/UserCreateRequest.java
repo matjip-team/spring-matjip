@@ -25,11 +25,4 @@ public class UserCreateRequest {
     @Size(min = 8, max = 100, message = "{error.validation.user.password.length}") // 해시 길이 기준 고려, 최소 8자
     private String password;
 
-    @NotBlank(message = "{error.validation.user.email.required}")
-    @Size(max = 10)
-    private String role;   // "USER" or "ADMIN"
-
-    @NotBlank(message = "{error.validation.user.email.required}")
-    @Size(max = 10)
-    private String status; // "ACTIVE", "BLOCKED", "DELETED"
 }
