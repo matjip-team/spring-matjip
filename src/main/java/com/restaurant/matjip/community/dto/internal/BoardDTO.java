@@ -1,4 +1,4 @@
-package com.restaurant.matjip.community.dto;
+package com.restaurant.matjip.community.dto.internal;
 
 import com.restaurant.matjip.community.domain.Board;
 import lombok.AllArgsConstructor;
