@@ -3,6 +3,12 @@ VALUES
 (NOW(), 1, NOW(), 1, 'test@naver.com', '홍길동', '길동', '{noop}12345678', 'USER', 'ACTIVE'),
 (NOW(), 1, NOW(), 1, 'user2@example.com', '김철수', '철수', '{noop}12345678', 'USER', 'ACTIVE');
 
+INSERT INTO `user_profiles`
+(`created_at`, `created_by`, `updated_at`, `updated_by`, `user_id`, `nickname`, `profile_image_url`, `bio`)
+VALUES
+(NOW(), 1, NOW(), 1, 1, '맛집러1', '/images/profiles/user1.jpg', '안녕하세요! 맛집 탐방을 좋아합니다.'),
+(NOW(), 1, NOW(), 1, 2, '맛집러2', '/images/profiles/user2.jpg', '맛있는 음식과 커피를 좋아해요.');
+
 INSERT INTO restaurants (created_at, created_by, updated_at, updated_by, address, description, latitude, longitude, name, phone)
 VALUES
 (NOW(), 1, NOW(), 1, '서울특별시 강남구 테헤란로 123', '맛있는 한식집입니다.', 37.5012, 127.0396, '강남맛집1', '02-123-4567'),
@@ -29,3 +35,17 @@ VALUES
 (4, NOW(), 2, NOW(), 2, 8, 2, '일식집이라 깔끔하고 좋네요.'),
 (3, NOW(), 1, NOW(), 1, 9, 1, '이탈리안 레스토랑인데 평범했습니다.'),
 (5, NOW(), 2, NOW(), 2, 10, 2, '치킨과 맥주 최고! 친구들과 다시 오고 싶네요.');
+
+
+INSERT INTO `recommendations` (`score`, `created_at`, `created_by`, `updated_at`, `updated_by`, `restaurant_id`, `user_id`, `reason`)
+VALUES
+(4.5, NOW(), 1, NOW(), 1, 1, 1, '친절한 서비스'),
+(5.0, NOW(), 2, NOW(), 2, 1, 1, '맛있음'),
+(3.5, NOW(), 1, NOW(), 1, 1, 1, '가격 대비 만족'),
+(4.0, NOW(), 2, NOW(), 2, 1, 2, '분위기 좋음'),
+(2.5, NOW(), 1, NOW(), 1, 1, 2, '조금 짰음'),
+(4.8, NOW(), 2, NOW(), 2, 1, 2, '다시 방문 의사 있음'),
+(3.0, NOW(), 1, NOW(), 1, 1, 1, '평범함'),
+(4.2, NOW(), 2, NOW(), 2, 2, 2, '추천함'),
+(5.0, NOW(), 1, NOW(), 1, 3, 1, '강추'),
+(4.7, NOW(), 2, NOW(), 2, 1, 1, '인테리어 예쁨');
