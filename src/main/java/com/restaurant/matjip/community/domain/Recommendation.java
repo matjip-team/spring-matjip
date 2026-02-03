@@ -33,4 +33,9 @@ public class Recommendation extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+// 임시
+    private Double score;     // 🔥 이거 추가
+
+    @Column(columnDefinition = "TEXT")
+    private String reason;    // 🔥 이거 추가
 }

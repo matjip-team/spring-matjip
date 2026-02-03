@@ -8,6 +8,7 @@ import com.restaurant.matjip.community.service.BoardCommandService;
 import com.restaurant.matjip.community.service.BoardQueryService;
 import com.restaurant.matjip.community.service.BoardRecommendationService;
 import com.restaurant.matjip.global.common.ApiResponse;
+import com.restaurant.matjip.global.common.CustomUserDetails;
 import com.restaurant.matjip.users.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,13 +43,13 @@ public class BoardController {
     @PostMapping
     public ApiResponse<Long> createBoard(
             @RequestBody BoardCreateRequest request,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        if (user == null) {
+        if (userDetails == null) {
             throw new IllegalStateException("인증된 사용자 정보가 없습니다.");
         }
 
-        Long boardId = boardCommandService.create(request, user);
+        Long boardId = boardCommandService.create(request, userDetails.getId());
         return ApiResponse.success(boardId);
     }
 

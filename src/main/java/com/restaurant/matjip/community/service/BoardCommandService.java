@@ -4,30 +4,32 @@ import com.restaurant.matjip.community.domain.Board;
 import com.restaurant.matjip.community.dto.request.BoardCreateRequest;
 import com.restaurant.matjip.community.repository.BoardRepository;
 import com.restaurant.matjip.users.domain.User;
+import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-/**
- * 게시글 생성/수정/삭제 담당 Service
- */
 @Service
 @RequiredArgsConstructor
 public class BoardCommandService {
 
     private final BoardRepository boardRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public Long create(BoardCreateRequest request, User user) {
+    public Long create(BoardCreateRequest request, Long userId) {
 
-        Board board = new Board();
-        board.setTitle(request.getTitle());
-        board.setContent(request.getContent());
-        board.setBoardType(request.getBoardType());
-        board.setUser(user);
-        board.setViewCount(0);
-        board.setRecommendCount(0);
+        User writer = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("사용자 없음"));
+
+        Board board = Board.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .boardType(request.getBoardType())
+                .user(writer)
+                .viewCount(0)
+                .recommendCount(0)
+                .build();
 
         return boardRepository.save(board).getId();
     }
