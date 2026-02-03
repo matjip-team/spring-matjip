@@ -6,19 +6,21 @@ import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
 import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
 import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
 import com.restaurant.matjip.mypage.service.MyPageService;
-import com.restaurant.matjip.users.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/mypage")
 @RequiredArgsConstructor
 public class MyPageController {
     private final MyPageService myPageService;
+    private final MessageSource messageSource;
 
     @GetMapping("/reviews")
     public List<ReviewResponse> getReviews(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -37,11 +39,11 @@ public class MyPageController {
 
     @PutMapping("/profile")
     public ApiResponse<Void> updateProfile(
-            @ModelAttribute @Valid UserInfoRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+            @ModelAttribute @Valid UserInfoRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails, Locale locale) {
 
         myPageService.updateProfile(1L,request);
-
-        return ApiResponse.success(null);
+        String msg = messageSource.getMessage("success.user.updated",null, locale);
+        return ApiResponse.success(msg);
     }
 
 }
