@@ -1,7 +1,6 @@
-package com.restaurant.matjip.community.domain;
+package com.restaurant.matjip.data.domain;
 
 import com.restaurant.matjip.common.domain.BaseEntity;
-import com.restaurant.matjip.data.domain.Restaurant;
 import com.restaurant.matjip.users.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
