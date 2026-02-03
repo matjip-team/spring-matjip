@@ -21,13 +21,23 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    /** 관리자/수동 생성 */
     public CategoryDTO createCategory(String name) {
         if (categoryRepository.findByName(name).isPresent()) {
             throw new RuntimeException("Category already exists");
         }
-        Category category = new Category();
-        category.setName(name);
+        Category category = Category.builder().name(name).build();
         categoryRepository.save(category);
         return CategoryDTO.fromEntity(category);
+    }
+
+    /** ⭐ 수집기 전용 */
+    public Category getOrCreate(String name) {
+        return categoryRepository.findByName(name)
+                .orElseGet(() ->
+                        categoryRepository.save(
+                                Category.builder().name(name).build()
+                        )
+                );
     }
 }
