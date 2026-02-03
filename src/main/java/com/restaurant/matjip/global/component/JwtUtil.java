@@ -2,6 +2,7 @@ package com.restaurant.matjip.global.component;
 
 //JwtUtil 클래스는 **JWT(Json Web Token)**을 생성하고 검증하는 핵심 유틸리티
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -65,16 +66,16 @@ public class JwtUtil {
     }
 
     //토큰 생성 메서드(AccessToken)
-    public String generateAccessToken(String username) {
-        return createToken(username, accessTokenExpiration);
+    public String generateAccessToken(String username, long userId) {
+        return createToken(username, userId, accessTokenExpiration);
     }
 
     //토큰 생성 메서드(RefreshToken)
-    public String generateRefreshToken(String username) {
-        return createToken(username, refreshTokenExpiration);
+    public String generateRefreshToken(String username, long userId) {
+        return createToken(username, userId, refreshTokenExpiration);
     }
 
-    private String createToken(String username, long expireMillis) {
+    private String createToken(String username, long userId, long expireMillis) {
         /*페이로드(Payload) HEADER.PAYLOAD.SIGNATURE
           HEADER 는 jjwt가 자동으로 만들어줌
           Jwts.builder()
@@ -95,6 +96,7 @@ public class JwtUtil {
         Date now = new Date();
         return Jwts.builder()
                 .setSubject(username) // JWT 페이로드의 sub(주체) 필드에 username 저장
+                .claim("userId", userId)
                 .setIssuedAt(now)// iat 발행 시간
                 .setExpiration(new Date(now.getTime() + expireMillis))// exp 만료 시간
                 .signWith(key, SignatureAlgorithm.HS256)// 비밀키로 HMAC-SHA256 서명
@@ -113,6 +115,14 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     /*
