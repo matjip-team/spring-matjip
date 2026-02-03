@@ -5,7 +5,7 @@ import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
 import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
 import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
-import com.restaurant.matjip.mypage.repository.ReviewRepository;
+import com.restaurant.matjip.mypage.repository.ReviewRepository2;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.domain.UserProfile;
 import com.restaurant.matjip.users.repository.UserProfileRepository;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
-    private final ReviewRepository reviewRepository;
+    private final ReviewRepository2 reviewRepository;
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
 

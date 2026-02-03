@@ -12,8 +12,8 @@ public class RestaurantMapDTO {
 
     private Long id;
     private String name;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
+    private BigDecimal lat;
+    private BigDecimal lng;
 
     public static RestaurantMapDTO from(Restaurant r) {
         return new RestaurantMapDTO(

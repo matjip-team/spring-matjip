@@ -15,6 +15,7 @@ public class RestaurantListDTO {
     private Long id;
     private String name;
     private String address;
+    private String imageUrl;
     private Set<String> categories;
 
     public static RestaurantListDTO from(Restaurant r) {
@@ -22,6 +23,7 @@ public class RestaurantListDTO {
                 r.getId(),
                 r.getName(),
                 r.getAddress(),
+                r.getImageUrl(),
                 r.getCategories().stream()
                         .map(Category::getName)
                         .collect(Collectors.toSet())

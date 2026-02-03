@@ -1,7 +1,9 @@
 package com.restaurant.matjip.data.domain;
 
+import com.restaurant.matjip.common.domain.BaseEntity;
 import com.restaurant.matjip.users.domain.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +16,8 @@ import lombok.NoArgsConstructor;
 )
 @Getter
 @NoArgsConstructor
-public class Review {
+@AllArgsConstructor
+public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

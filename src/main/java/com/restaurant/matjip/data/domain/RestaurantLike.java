@@ -1,5 +1,6 @@
 package com.restaurant.matjip.data.domain;
 
+import com.restaurant.matjip.common.domain.BaseEntity;
 import com.restaurant.matjip.users.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 )
 @Getter
 @NoArgsConstructor
-public class RestaurantLike {
+public class RestaurantLike extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
