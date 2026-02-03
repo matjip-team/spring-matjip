@@ -32,3 +32,7 @@ jwt:
 cookie:
   access-token-max-age: 900 # 15분 (초 단위)
   refresh-token-max-age: 604800 # 7일 (초 단위)
+
+productImageLocation: C:\\shop\\images
+# file://→ 파일 프로토콜
+uploadPath: file:///C:/shop/images
