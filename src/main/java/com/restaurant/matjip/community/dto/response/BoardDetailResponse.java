@@ -17,6 +17,7 @@ public class BoardDetailResponse {
     private String authorNickname;
 
     private BoardType boardType;
+    private String imageUrl;
 
     public BoardDetailResponse(Board board) {
         this.id = board.getId();
@@ -27,6 +28,7 @@ public class BoardDetailResponse {
         this.authorId = board.getUser().getId();
         this.authorNickname = board.getUser().getNickname();
         this.boardType = board.getBoardType();
+        this.imageUrl = board.getImageUrl();
     }
 }
 

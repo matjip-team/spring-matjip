@@ -26,6 +26,7 @@ public class BoardCommandService {
                 .title(request.getTitle())
                 .content(request.getContent())
                 .boardType(request.getBoardType())
+                .imageUrl(request.getImageUrl())
                 .user(writer)
                 .viewCount(0)
                 .recommendCount(0)

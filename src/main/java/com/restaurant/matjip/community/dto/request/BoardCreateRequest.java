@@ -19,4 +19,6 @@ public class BoardCreateRequest {
 
     @NotNull
     private BoardType boardType; // NOTICE / REVIEW
+
+    private String imageUrl;
 }

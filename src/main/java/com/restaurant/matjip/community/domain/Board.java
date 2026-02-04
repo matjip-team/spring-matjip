@@ -41,6 +41,9 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     /* ================== 연관관계 ================== */
 
     // Comment는 지금 파일에 없으니 일단 유지/없으면 제거해도 됨
