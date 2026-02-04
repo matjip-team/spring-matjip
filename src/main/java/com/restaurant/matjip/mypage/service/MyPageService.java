@@ -1,8 +1,10 @@
 package com.restaurant.matjip.mypage.service;
 
+import com.restaurant.matjip.data.domain.Review;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
+import com.restaurant.matjip.mypage.dto.response.ReviewPageResponse;
 import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
 import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
 import com.restaurant.matjip.mypage.repository.ReviewRepository2;
@@ -13,6 +15,8 @@ import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,11 +43,21 @@ public class MyPageService {
     @Value("${productImageLocation}")
     private String productImageLocation ; // 기본 값 :
 
-    public List<ReviewResponse> getUserReviews(Long userId) {
-        return reviewRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(ReviewResponse::from)
-                .collect(Collectors.toList());
+//    public List<ReviewResponse> getUserReviews(Long userId) {
+//        return reviewRepository.findByUserIdOrderByCreatedAtDesc(userId)
+//                .stream()
+//                .map(ReviewResponse::from)
+//                .collect(Collectors.toList());
+//    }
+
+    public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
+
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Review> review = reviewRepository.findNextReview(cursorId, pageable);
+
+        Long nextCursor = review.isEmpty() ? null : review.getLast().getId();
+
+        return ReviewPageResponse.from(review, nextCursor);
     }
 
     @Transactional(readOnly = true)
