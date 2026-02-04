@@ -20,7 +20,10 @@ public enum ErrorCode {
 
     // Common
     INTERNAL_ERROR("error.common.internal", HttpStatus.INTERNAL_SERVER_ERROR),
-    UNAUTHORIZED_ERROR("error.common.unauthorized", HttpStatus.UNAUTHORIZED);
+    UNAUTHORIZED_ERROR("error.common.unauthorized", HttpStatus.UNAUTHORIZED),
+
+    // Board
+    BOARD_NOT_FOUND("error.baord.not-found", HttpStatus.NOT_FOUND);
 
     private final String messageKey;
     private final HttpStatus status;

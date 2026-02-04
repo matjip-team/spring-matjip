@@ -6,29 +6,27 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "likes", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id","target_type","target_id"}))
+@Table(
+        name = "board_recommendations",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"board_id", "user_id"})
+        }
+)
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Like extends BaseEntity {
+public class BoardRecommendation extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", nullable = false)
+    private Board board;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "target_type", nullable = false)
-    private TargetType targetType;
-
-    @Column(name = "target_id", nullable = false)
-    private Long targetId;
-
-    public enum TargetType { BOARD, COMMENT }
 }
-
