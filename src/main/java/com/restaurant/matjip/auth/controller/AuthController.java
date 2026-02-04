@@ -7,6 +7,7 @@ import com.restaurant.matjip.global.common.CustomUserDetails;
 import com.restaurant.matjip.global.component.JwtUtil;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +44,8 @@ public class AuthController {
 
             CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
 
-            String accessToken = jwtUtil.generateAccessToken(user.getEmail());
-            String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+            String accessToken = jwtUtil.generateAccessToken(user.getEmail(), user.getId());
+            String refreshToken = jwtUtil.generateRefreshToken(user.getEmail(), user.getId());
 
             // 권한 문자열 리스트로 변환
             List<String> roles = user.getAuthorities().stream()
@@ -75,8 +76,13 @@ public class AuthController {
 
         //RefreshToken이 유효하면 username 추출 → 새로운 AccessToken 발급
         if (refreshToken != null && jwtUtil.validateToken(refreshToken)) {
-            String username = jwtUtil.extractUsername(refreshToken);
-            String newAccessToken = jwtUtil.generateAccessToken(username);
+
+            Claims claims = jwtUtil.extractAllClaims(refreshToken);
+
+            String username = claims.getSubject();
+            Long userId = claims.get("userId", Long.class);
+
+            String newAccessToken = jwtUtil.generateAccessToken(username, userId);
 
             jwtUtil.addNewTokensToCookie(response, newAccessToken);
 

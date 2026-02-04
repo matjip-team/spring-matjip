@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class ReviewResponse {
 
     private Long id;
-    private byte rating;
+    private int rating;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

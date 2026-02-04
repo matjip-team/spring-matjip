@@ -26,6 +26,7 @@ public class Restaurant extends BaseEntity {
     @Column(length = 255, nullable = false)
     private String address;
 
+    /* DB 구조 유지 */
     @Column(precision = 10, scale = 7)
     private BigDecimal latitude;
 
@@ -38,6 +39,15 @@ public class Restaurant extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(unique = true)
+    private String externalId;
+
+    private String source;
+
+    /* 이미지 추가 */
+    @Column(length = 500)
+    private String imageUrl;
+
     @ManyToMany
     @JoinTable(
             name = "restaurant_categories",
@@ -45,6 +55,27 @@ public class Restaurant extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<Category> categories = new HashSet<>();
+
+    /* 기존 로직 유지 */
+    public static Restaurant fromPython(
+            String externalId,
+            String name,
+            String address,
+            double lat,
+            double lng,
+            String source
+    ) {
+        Restaurant r = new Restaurant();
+        r.externalId = externalId;
+        r.name = name;
+        r.address = address;
+        r.latitude = BigDecimal.valueOf(lat);
+        r.longitude = BigDecimal.valueOf(lng);
+        r.source = source;
+        return r;
+    }
+
+    public void addCategory(Category category) {
+        this.categories.add(category);
+    }
 }
-
-
