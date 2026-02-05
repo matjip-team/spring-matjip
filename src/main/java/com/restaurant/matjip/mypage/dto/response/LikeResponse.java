@@ -22,6 +22,7 @@ public class LikeResponse {
     private String restaurantName;
 
     private double avgRating;
+    private long reviewCount;
 
     public static LikeResponse from(RestaurantLike r) {
         return new LikeResponse(
@@ -30,6 +31,7 @@ public class LikeResponse {
                 r.getUpdatedAt(),
                 r.getRestaurant().getId(),
                 r.getRestaurant().getName(),
+                0,
                 0
         );
     }
