@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -15,12 +14,12 @@ import java.util.List;
 @Builder
 public class ReviewPageResponse {
 
-    private List<ReviewResponse> review;
+    private List<ReviewResponse> reviews;
     private Long nextCursor;
 
     public static ReviewPageResponse from(List<Review> reviews, Long nextCursor) {
         List<ReviewResponse> reviewResponses = reviews.stream()
-                .map(r -> ReviewResponse.from(r)) // Review → ReviewResponse 변환
+                .map(ReviewResponse::from) // Review → ReviewResponse 변환
                 .toList(); // Java 16 이상
         return new ReviewPageResponse(
                 reviewResponses,

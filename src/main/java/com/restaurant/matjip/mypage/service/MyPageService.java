@@ -1,12 +1,15 @@
 package com.restaurant.matjip.mypage.service;
 
+import com.restaurant.matjip.data.domain.RestaurantLike;
 import com.restaurant.matjip.data.domain.Review;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
+import com.restaurant.matjip.mypage.dto.response.LikePageResponse;
+import com.restaurant.matjip.mypage.dto.response.LikeResponse;
 import com.restaurant.matjip.mypage.dto.response.ReviewPageResponse;
-import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
 import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
+import com.restaurant.matjip.mypage.repository.RestaurantLikeRepository2;
 import com.restaurant.matjip.mypage.repository.ReviewRepository2;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.domain.UserProfile;
@@ -26,13 +29,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
     private final ReviewRepository2 reviewRepository;
+    private final RestaurantLikeRepository2 restaurantLikeRepository;
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;
     private final PasswordEncoder passwordEncoder;
@@ -43,12 +46,14 @@ public class MyPageService {
     @Value("${productImageLocation}")
     private String productImageLocation ; // 기본 값 :
 
-//    public List<ReviewResponse> getUserReviews(Long userId) {
-//        return reviewRepository.findByUserIdOrderByCreatedAtDesc(userId)
-//                .stream()
-//                .map(ReviewResponse::from)
-//                .collect(Collectors.toList());
-//    }
+    public LikePageResponse getLikes(long l, Long cursorId, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<LikeResponse> like = restaurantLikeRepository.findNextLike(cursorId, pageable);
+
+        Long nextCursor = like.isEmpty() ? null : like.getLast().getId();
+
+        return LikePageResponse.from(like, nextCursor);
+    }
 
     public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
 
@@ -116,7 +121,7 @@ public class MyPageService {
                     if (!oldFile.delete()) {
                         //파일이없을 수도 있음
                         //throw new BusinessException(ErrorCode.INTERNAL_ERROR);
-                        log.debug("삭세 실패");
+                        log.debug("삭제 실패");
                     }
                 }
             }

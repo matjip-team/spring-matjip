@@ -21,7 +21,7 @@ public interface ReviewRepository2 extends JpaRepository<Review, Long> {
     JOIN FETCH r.restaurant
     WHERE (:cursorId IS NULL OR r.id > :cursorId)
     ORDER BY r.id ASC
-""")
+    """)
     List<Review> findNextReview(@Param("cursorId") Long cursorId, Pageable pageable);
 
 }

@@ -22,6 +22,20 @@ VALUES
 (NOW(), 1, NOW(), 1, '서울특별시 은평구 연서로 78', '이탈리안 레스토랑', 37.6172, 126.9223, '은평이탈리안', '02-901-2345'),
 (NOW(), 1, NOW(), 1, '서울특별시 노원구 상계로 101', '치킨과 맥주 전문점', 37.6543, 127.0567, '노원치킨', '02-012-3456');
 
+INSERT INTO restaurant_likes
+(created_at, created_by, restaurant_id, updated_at, updated_by, user_id)
+VALUES
+(NOW(), 1, 1, NOW(), 1, 1),
+(NOW(), 2, 2, NOW(), 1, 1),
+(NOW(), 3, 3, NOW(), 1, 1),
+(NOW(), 1, 4, NOW(), 1, 1),
+(NOW(), 1, 5, NOW(), 1, 1),
+(NOW(), 1, 6, NOW(), 1, 1),
+(NOW(), 1, 7, NOW(), 1, 1),
+(NOW(), 1, 8, NOW(), 1, 1),
+(NOW(), 1, 9, NOW(), 1, 1),
+(NOW(), 1, 10, NOW(), 1, 1);
+;
 
 INSERT INTO reviews (rating, created_at, created_by, updated_at, updated_by, restaurant_id, user_id, content)
 VALUES
