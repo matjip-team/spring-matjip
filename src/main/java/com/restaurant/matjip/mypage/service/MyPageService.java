@@ -79,9 +79,31 @@ public class MyPageService {
     public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
 
         Pageable pageable = PageRequest.of(0, limit);
-        List<Review> review = reviewRepository.findNextReview(cursorId, pageable);
+        List<ReviewResponse> review = reviewRepository.findNextReview(cursorId);
 
-        Long nextCursor = review.isEmpty() ? null : review.getLast().getId();
+        Map<Long, ReviewResponse> grouped = new LinkedHashMap<>();
+
+        for (ReviewResponse row : review) {
+            Long restaurantId = row.getRestaurantId();
+            ReviewResponse existing = grouped.computeIfAbsent(restaurantId, id -> {
+                row.setCategories(new ArrayList<>()); // 항상 리스트 초기화
+                return row;
+            });
+
+            // categoryId가 있으면 리스트에 추가
+            if (row.getCategoryId() != null) {
+                existing.getCategories().add(
+                        new CategroyResponse(row.getCategoryId(), row.getCategoryName())
+                );
+            }
+        }
+
+        // cursor 기반 limit 적용
+        List<ReviewResponse> page = grouped.values().stream()
+                .limit(limit)
+                .toList();
+
+        Long nextCursor = page.isEmpty() ? null : page.getLast().getId();
 
         return ReviewPageResponse.from(review, nextCursor);
     }

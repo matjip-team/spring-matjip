@@ -1,23 +1,22 @@
 package com.restaurant.matjip.mypage.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.restaurant.matjip.data.domain.Review;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class ReviewResponse {
 
     private Long id;
-    private int rating;
+    private long rating;
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -26,9 +25,18 @@ public class ReviewResponse {
     private String restaurantName;
     private String address;
 
+    private double avgRating;
+    private long reviewCount;
+
     private List<CategroyResponse> categories = new ArrayList<>();
 
-    public ReviewResponse(Long id, int rating, String content, LocalDateTime createdAt, LocalDateTime updatedAt, Long restaurantId, String restaurantName, String address) {
+    // JPQL 생성자용 응답객체에는 미포함
+    @JsonIgnore
+    private Long categoryId;
+    @JsonIgnore
+    private String categoryName;
+
+    public ReviewResponse(Long id, long rating, String content, LocalDateTime createdAt, LocalDateTime updatedAt, Long restaurantId, String restaurantName, String address, double avgRating, long reviewCount, Long categoryId, String categoryName) {
         this.id = id;
         this.rating = rating;
         this.content = content;
@@ -37,19 +45,9 @@ public class ReviewResponse {
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
         this.address = address;
+        this.avgRating = avgRating;
+        this.reviewCount = reviewCount;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
     }
-
-    public static ReviewResponse from(Review r) {
-        return new ReviewResponse(
-                r.getId(),
-                r.getRating(),
-                r.getContent(),
-                r.getCreatedAt(),
-                r.getUpdatedAt(),
-                r.getRestaurant().getId(),
-                r.getRestaurant().getName(),
-                r.getRestaurant().getAddress()
-        );
-    }
-
 }

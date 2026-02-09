@@ -17,14 +17,10 @@ public class ReviewPageResponse {
     private List<ReviewResponse> reviews;
     private Long nextCursor;
 
-    public static ReviewPageResponse from(List<Review> reviews, Long nextCursor) {
-        List<ReviewResponse> reviewResponses = reviews.stream()
-                .map(ReviewResponse::from) // Review → ReviewResponse 변환
-                .toList(); // Java 16 이상
+    public static ReviewPageResponse from(List<ReviewResponse> reviews, Long nextCursor) {
         return new ReviewPageResponse(
-                reviewResponses,
+                reviews,
                 nextCursor
         );
     }
-
 }

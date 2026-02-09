@@ -1,6 +1,7 @@
 package com.restaurant.matjip.mypage.repository;
 
 import com.restaurant.matjip.data.domain.Review;
+import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,14 +15,30 @@ public interface ReviewRepository2 extends JpaRepository<Review, Long> {
     @EntityGraph(attributePaths = {"user", "restaurant"})
     List<Review> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    // 커서 기반 조회: ID > lastId 순서로 limit
     @Query("""
-    SELECT r FROM Review r
-    JOIN FETCH r.user
-    JOIN FETCH r.restaurant
-    WHERE (:cursorId IS NULL OR r.id > :cursorId)
-    ORDER BY r.id ASC
+    SELECT new com.restaurant.matjip.mypage.dto.response.ReviewResponse(
+         r.id,
+         r.rating,
+         r.content,
+         r.createdAt,
+         r.updatedAt,
+         res.id,
+         res.name,
+         res.address,
+         COALESCE(AVG(rv.rating), 0),
+         COUNT(rv.id),
+         c.id,
+         c.name
+     )
+     FROM Review r
+     JOIN r.restaurant res
+     LEFT JOIN res.categories c
+     LEFT JOIN Review rv ON rv.restaurant.id = res.id
+     WHERE (:cursorId IS NULL OR r.id > :cursorId)
+     GROUP BY r.id, r.createdAt, r.updatedAt,
+              res.id, res.name, c.id, c.name
+     ORDER BY r.id ASC
     """)
-    List<Review> findNextReview(@Param("cursorId") Long cursorId, Pageable pageable);
+    List<ReviewResponse> findNextReview(@Param("cursorId") Long cursorId);
 
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(
@@ -21,19 +22,24 @@ public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("리뷰 아이디")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)    
     @JoinColumn(name = "user_id", nullable = false)
+    @Comment("사용자 아이디")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
+    @Comment("레스토랑 아이디")
     private Restaurant restaurant;
 
-    @Column(nullable = false)
+    @Comment("평가")
+    @Column(nullable = false)    
     private int rating; // 1~5
 
+    @Comment("리뷰내용")
     @Column(columnDefinition = "TEXT")
     private String content;
 
