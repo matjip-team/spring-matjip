@@ -22,6 +22,17 @@ VALUES
 (NOW(), 1, NOW(), 1, '서울특별시 은평구 연서로 78', '이탈리안 레스토랑', 37.6172, 126.9223, '은평이탈리안', '02-901-2345'),
 (NOW(), 1, NOW(), 1, '서울특별시 노원구 상계로 101', '치킨과 맥주 전문점', 37.6543, 127.0567, '노원치킨', '02-012-3456');
 
+INSERT INTO `categories` (`name`, `created_at`, `updated_at`) VALUES
+('한식', NOW(), NOW()),
+('중식', NOW(), NOW()),
+('일식', NOW(), NOW()),
+('양식', NOW(), NOW());
+
+INSERT INTO `restaurant_categories` (`restaurant_id`, `category_id`) VALUES
+(1, 1),  -- 맛집A - 한식
+(1, 2),  -- 맛집A - 양식
+(2, 3);  -- 맛집B - 일식
+
 INSERT INTO restaurant_likes
 (created_at, created_by, restaurant_id, updated_at, updated_by, user_id)
 VALUES

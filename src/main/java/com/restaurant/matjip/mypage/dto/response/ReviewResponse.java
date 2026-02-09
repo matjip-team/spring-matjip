@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -22,6 +24,20 @@ public class ReviewResponse {
 
     private Long restaurantId;
     private String restaurantName;
+    private String address;
+
+    private List<CategroyResponse> categories = new ArrayList<>();
+
+    public ReviewResponse(Long id, int rating, String content, LocalDateTime createdAt, LocalDateTime updatedAt, Long restaurantId, String restaurantName, String address) {
+        this.id = id;
+        this.rating = rating;
+        this.content = content;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.restaurantId = restaurantId;
+        this.restaurantName = restaurantName;
+        this.address = address;
+    }
 
     public static ReviewResponse from(Review r) {
         return new ReviewResponse(
@@ -31,7 +47,8 @@ public class ReviewResponse {
                 r.getCreatedAt(),
                 r.getUpdatedAt(),
                 r.getRestaurant().getId(),
-                r.getRestaurant().getName()
+                r.getRestaurant().getName(),
+                r.getRestaurant().getAddress()
         );
     }
 

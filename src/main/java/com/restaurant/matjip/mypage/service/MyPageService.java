@@ -1,14 +1,10 @@
 package com.restaurant.matjip.mypage.service;
 
-import com.restaurant.matjip.data.domain.RestaurantLike;
 import com.restaurant.matjip.data.domain.Review;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
-import com.restaurant.matjip.mypage.dto.response.LikePageResponse;
-import com.restaurant.matjip.mypage.dto.response.LikeResponse;
-import com.restaurant.matjip.mypage.dto.response.ReviewPageResponse;
-import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
+import com.restaurant.matjip.mypage.dto.response.*;
 import com.restaurant.matjip.mypage.repository.RestaurantLikeRepository2;
 import com.restaurant.matjip.mypage.repository.ReviewRepository2;
 import com.restaurant.matjip.users.domain.User;
@@ -28,7 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -48,11 +47,33 @@ public class MyPageService {
 
     public LikePageResponse getLikes(long l, Long cursorId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        List<LikeResponse> like = restaurantLikeRepository.findNextLike(cursorId, pageable);
+        List<LikeResponse> like = restaurantLikeRepository.findNextLike(cursorId);
 
-        Long nextCursor = like.isEmpty() ? null : like.getLast().getId();
+        Map<Long, LikeResponse> grouped = new LinkedHashMap<>();
 
-        return LikePageResponse.from(like, nextCursor);
+        for (LikeResponse row : like) {
+            Long restaurantId = row.getRestaurantId();
+            LikeResponse existing = grouped.computeIfAbsent(restaurantId, id -> {
+                row.setCategories(new ArrayList<>()); // 항상 리스트 초기화
+                return row;
+            });
+
+            // categoryId가 있으면 리스트에 추가
+            if (row.getCategoryId() != null) {
+                existing.getCategories().add(
+                        new CategroyResponse(row.getCategoryId(), row.getCategoryName())
+                );
+            }
+        }
+
+        // cursor 기반 limit 적용
+        List<LikeResponse> page = grouped.values().stream()
+                .limit(limit)
+                .toList();
+
+        Long nextCursor = page.isEmpty() ? null : page.getLast().getId();
+
+        return LikePageResponse.from(page, nextCursor);
     }
 
     public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
