@@ -1,6 +1,5 @@
 package com.restaurant.matjip.mypage.service;
 
-import com.restaurant.matjip.data.domain.Review;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
@@ -32,6 +31,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MyPageService {
     private final ReviewRepository2 reviewRepository;
     private final RestaurantLikeRepository2 restaurantLikeRepository;
@@ -45,6 +45,7 @@ public class MyPageService {
     @Value("${productImageLocation}")
     private String productImageLocation ; // 기본 값 :
 
+    @Transactional(readOnly = true)
     public LikePageResponse getLikes(long l, Long cursorId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         List<LikeResponse> like = restaurantLikeRepository.findNextLike(cursorId);
@@ -76,6 +77,11 @@ public class MyPageService {
         return LikePageResponse.from(page, nextCursor);
     }
 
+    public void deleteLikes(long id, Long userId) {
+        restaurantLikeRepository.deleteByIdAndUserId(id, userId);
+    }
+
+    @Transactional(readOnly = true)
     public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
 
         Pageable pageable = PageRequest.of(0, limit);

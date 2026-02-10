@@ -48,4 +48,13 @@ public class MyPageController {
         return ApiResponse.success(msg);
     }
 
+    @DeleteMapping("/likes/{likeId}")
+    public ApiResponse<Void> deleteLikes(
+            @PathVariable Long likeId, @AuthenticationPrincipal CustomUserDetails customUserDetails, Locale locale) {
+
+        myPageService.deleteLikes(likeId, customUserDetails.getId());
+
+        return ApiResponse.success(null);
+    }
+
 }

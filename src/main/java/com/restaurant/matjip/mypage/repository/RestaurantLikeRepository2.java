@@ -34,4 +34,6 @@ public interface RestaurantLikeRepository2 extends JpaRepository<RestaurantLike,
      ORDER BY r.id ASC
     """)
     List<LikeResponse> findNextLike(@Param("cursorId") Long cursorId);
+
+    void deleteByIdAndUserId(long id, Long userId);
 }
