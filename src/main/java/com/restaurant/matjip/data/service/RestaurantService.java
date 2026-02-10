@@ -1,5 +1,7 @@
 package com.restaurant.matjip.data.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.restaurant.matjip.data.domain.Category;
 import com.restaurant.matjip.data.domain.Restaurant;
 import com.restaurant.matjip.data.dto.*;
@@ -7,8 +9,8 @@ import com.restaurant.matjip.data.repository.CategoryRepository;
 import com.restaurant.matjip.data.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -40,7 +42,7 @@ public class RestaurantService {
     }
 
     /* =========================
-       ⭐ Python 수집 기능
+        Python 수집 기능 (최종본)
        ========================= */
 
     @Transactional
@@ -48,23 +50,43 @@ public class RestaurantService {
 
         String url = "http://127.0.0.1:8000/collect";
 
-        PythonCollectResponse response =
-                restTemplate.postForObject(url, null, PythonCollectResponse.class);
+        /* 1️⃣ Python 응답을 String(JSON)으로 받기 */
+        String rawJson = restTemplate.postForObject(url, null, String.class);
 
-        if (response == null || response.getData() == null) {
-            throw new RuntimeException("Python 수집 결과가 비어있습니다.");
+        if (rawJson == null || rawJson.isBlank()) {
+            throw new RuntimeException("Python 수집 결과(JSON)가 비어있습니다.");
         }
 
+        /* 2️⃣ ObjectMapper에 snake_case 명시 */
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+        PythonCollectResponse response;
+        try {
+            /* 3️⃣ JSON → DTO 직접 파싱 (핵심) */
+            response = mapper.readValue(rawJson, PythonCollectResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Python 응답 파싱 실패", e);
+        }
+
+        if (response.getData() == null) {
+            throw new RuntimeException("Python 수집 데이터가 없습니다.");
+        }
+
+        /* 4️⃣ DB 저장 */
         for (PythonRestaurantDto dto : response.getData()) {
 
-            /* 1️⃣ 중복 방지 */
-            if (restaurantRepository.existsByExternalId(dto.getExternal_id())) {
+            /* 디버그 로그 (한 번 확인 후 지워도 됨) */
+            System.out.println("IMAGE CHECK = " + dto.getImageUrl());
+
+            /* 4-1️⃣ 중복 방지 */
+            if (restaurantRepository.existsByExternalId(dto.getExternalId())) {
                 continue;
             }
 
-            /* 2️⃣ Restaurant 생성 (여기서 위경도 이미 세팅됨) */
+            /* 4-2️⃣ Restaurant 생성 */
             Restaurant restaurant = Restaurant.fromPython(
-                    dto.getExternal_id(),
+                    dto.getExternalId(),
                     dto.getName(),
                     dto.getAddress(),
                     dto.getLat(),
@@ -72,13 +94,13 @@ public class RestaurantService {
                     dto.getSource()
             );
 
-            /* 이미지 기능 추가 (핵심 한 줄) */
-            restaurant.setImageUrl(dto.getImage_url());
+            /* 🔥 이미지 URL 저장 (문제 해결 핵심) */
+            restaurant.setImageUrl(dto.getImageUrl());
 
             /* 기타 필드 */
             restaurant.setPhone(dto.getPhone());
 
-            /* 3️⃣ 카테고리 매핑 */
+            /* 4-3️⃣ 카테고리 매핑 */
             if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
 
                 String[] categoryNames = dto.getCategory().split(">");
@@ -98,7 +120,7 @@ public class RestaurantService {
                 }
             }
 
-            /* 4️⃣ 저장 */
+            /* 4-4️⃣ 저장 */
             restaurantRepository.save(restaurant);
         }
     }

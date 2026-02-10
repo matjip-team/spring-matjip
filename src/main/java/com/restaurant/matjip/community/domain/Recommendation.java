@@ -1,15 +1,18 @@
 package com.restaurant.matjip.community.domain;
 
 import com.restaurant.matjip.common.domain.BaseEntity;
-import com.restaurant.matjip.data.domain.Restaurant;
 import com.restaurant.matjip.users.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "recommendations")
+@Table(
+        name = "recommendations",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"board_id", "user_id"})
+        }
+)
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -19,17 +22,20 @@ public class Recommendation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    /* ================== 추천 대상 게시글 ================== */
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", nullable = false)
+    private Board board;
+
+    /* ================== 추천한 유저 ================== */
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+// 임시
+    private Double score;     // 🔥 이거 추가
 
-    @ManyToOne
-    @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
-
-    private float score;
-
-    @Column(length = 100)
-    private String reason;
+    @Column(columnDefinition = "TEXT")
+    private String reason;    // 🔥 이거 추가
 }
-

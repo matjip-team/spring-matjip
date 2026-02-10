@@ -1,25 +1,19 @@
 package com.restaurant.matjip.mypage.repository;
 
-import com.restaurant.matjip.data.domain.Review;
-import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
+import com.restaurant.matjip.data.domain.RestaurantLike;
+import com.restaurant.matjip.mypage.dto.response.LikeResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface ReviewRepository2 extends JpaRepository<Review, Long> {
-    // 로그인한 사용자(userId) 기준 최신순 조회
-    @EntityGraph(attributePaths = {"user", "restaurant"})
-    List<Review> findByUserIdOrderByCreatedAtDesc(Long userId);
+public interface RestaurantLikeRepository2 extends JpaRepository<RestaurantLike, Long> {
 
+    // 커서 기반 조회: ID > lastId 순서로 limit
     @Query("""
-    SELECT new com.restaurant.matjip.mypage.dto.response.ReviewResponse(
+    SELECT new com.restaurant.matjip.mypage.dto.response.LikeResponse(
          r.id,
-         r.rating,
-         r.content,
          r.createdAt,
          r.updatedAt,
          res.id,
@@ -30,7 +24,7 @@ public interface ReviewRepository2 extends JpaRepository<Review, Long> {
          c.id,
          c.name
      )
-     FROM Review r
+     FROM RestaurantLike r
      JOIN r.restaurant res
      LEFT JOIN res.categories c
      LEFT JOIN Review rv ON rv.restaurant.id = res.id
@@ -39,6 +33,5 @@ public interface ReviewRepository2 extends JpaRepository<Review, Long> {
               res.id, res.name, c.id, c.name
      ORDER BY r.id ASC
     """)
-    List<ReviewResponse> findNextReview(@Param("cursorId") Long cursorId);
-
+    List<LikeResponse> findNextLike(@Param("cursorId") Long cursorId);
 }

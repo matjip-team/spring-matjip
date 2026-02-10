@@ -144,7 +144,7 @@ public class JwtUtil {
 
     public void addTokensToCookie(HttpServletResponse response, String accessToken, String refreshToken) {
         addCookie(response, accessTokenName, accessToken, accessCookieMaxAge, "/");
-        addCookie(response, refreshTokenName, refreshToken, refreshCookieMaxAge, "/auth/refresh");
+        addCookie(response, refreshTokenName, refreshToken, refreshCookieMaxAge, "/api/auth/refresh");
     }
 
     public void addNewTokensToCookie(HttpServletResponse response, String accessToken) {
