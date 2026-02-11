@@ -3,7 +3,11 @@ package com.restaurant.matjip.community.domain;
 import com.restaurant.matjip.common.domain.BaseEntity;
 import com.restaurant.matjip.users.domain.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
 @Table(
@@ -17,6 +21,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Recommendation extends BaseEntity {
+
+    /* ================== PK ================== */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,9 +39,12 @@ public class Recommendation extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-// 임시
-    private Double score;     // 🔥 이거 추가
+
+    /* ================== 임시 필드 ================== */
+
+    private Double score;     // 🔥 임시 점수
 
     @Column(columnDefinition = "TEXT")
-    private String reason;    // 🔥 이거 추가
+    private String reason;    // 🔥 추천 사유
 }
+

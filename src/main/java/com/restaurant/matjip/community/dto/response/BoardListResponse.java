@@ -18,8 +18,9 @@ public class BoardListResponse {
     private int viewCount;           // 조회수
     private int recommendCount;      // 추천 수
     private LocalDateTime createdAt; // 작성일
+    private int commentCount; // 댓글 수
 
-    public static BoardListResponse from(Board board) {
+    public static BoardListResponse from(Board board, int commentCount) {
         return new BoardListResponse(
                 board.getId(),
                 board.getBoardType(),
@@ -27,7 +28,8 @@ public class BoardListResponse {
                 board.getUser().getNickname(),
                 board.getViewCount(),
                 board.getRecommendCount(),
-                board.getCreatedAt()
+                board.getCreatedAt(),
+                commentCount
         );
     }
 }

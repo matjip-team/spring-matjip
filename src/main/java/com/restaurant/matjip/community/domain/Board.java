@@ -17,6 +17,8 @@ import java.util.List;
 @Builder
 public class Board extends BaseEntity {
 
+    /* ================== 기본 컬럼 ================== */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,18 +39,18 @@ public class Board extends BaseEntity {
     @Column(name = "recommend_count", nullable = false)
     private int recommendCount;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
+    /* ================== 연관 관계 ================== */
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "image_url", length = 500)
-    private String imageUrl;
-
-    /* ================== 연관관계 ================== */
-
-    // Comment는 지금 파일에 없으니 일단 유지/없으면 제거해도 됨
-    // @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private List<Comment> comments = new ArrayList<>();
+     //댓글
+     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardRecommendation> recommendations = new ArrayList<>();
@@ -64,6 +66,8 @@ public class Board extends BaseEntity {
     }
 
     public void decreaseRecommendCount() {
-        if (this.recommendCount > 0) this.recommendCount--;
+        if (this.recommendCount > 0) {
+            this.recommendCount--;
+        }
     }
 }
