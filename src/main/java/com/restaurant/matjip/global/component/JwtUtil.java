@@ -143,8 +143,8 @@ public class JwtUtil {
     }
 
     public void addTokensToCookie(HttpServletResponse response, String accessToken, String refreshToken) {
-        addCookie(response, accessTokenName, accessToken, accessCookieMaxAge, "/");
-        addCookie(response, refreshTokenName, refreshToken, refreshCookieMaxAge, "/api/auth/refresh");
+        addCookie(response, accessTokenName, accessToken, accessCookieMaxAge, "/api/auth/");
+        addCookie(response, refreshTokenName, refreshToken, refreshCookieMaxAge, "/api/auth/");
     }
 
     public void addNewTokensToCookie(HttpServletResponse response, String accessToken) {
@@ -164,13 +164,13 @@ public class JwtUtil {
     public void deleteCookie(HttpServletResponse response) {
         Cookie accessCookie = new Cookie(accessTokenName, null);
         accessCookie.setHttpOnly(true);
-        accessCookie.setPath("/");
+        accessCookie.setPath("/api/auth/");
         accessCookie.setMaxAge(0); //MaxAge=0 → 쿠키 즉시 삭제
         response.addCookie(accessCookie);
 
         Cookie refreshCookie = new Cookie(refreshTokenName, null);
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/auth/refresh");
+        refreshCookie.setPath("/api/auth/");
         refreshCookie.setMaxAge(0); //MaxAge=0 → 쿠키 즉시 삭제
         response.addCookie(refreshCookie);
     }
