@@ -19,6 +19,11 @@ spring:
       charset: UTF-8
       force: true
 
+aws:
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+
 jpa:
   defer-datasource-initialization: true #JPA가 엔티티 매핑 후 테이블 생성(update) 완료 → 그 다음 schema.sql / data.sql 실행
 
