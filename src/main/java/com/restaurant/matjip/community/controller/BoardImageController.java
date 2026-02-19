@@ -2,7 +2,7 @@ package com.restaurant.matjip.community.controller;
 
 import com.restaurant.matjip.community.dto.request.BoardImagePresignRequest;
 import com.restaurant.matjip.community.dto.response.BoardImagePresignResponse;
-import com.restaurant.matjip.community.service.BoardImageService;
+import com.restaurant.matjip.common.service.S3ImagePresignService;
 import com.restaurant.matjip.global.common.ApiResponse;
 import com.restaurant.matjip.global.common.CustomUserDetails;
 import com.restaurant.matjip.global.exception.BusinessException;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BoardImageController {
 
-    private final BoardImageService boardImageService;
+    private final S3ImagePresignService s3ImagePresignService;
 
     @PostMapping("/presigned-url")
     public ApiResponse<BoardImagePresignResponse> createPresignedUrl(
@@ -31,6 +31,17 @@ public class BoardImageController {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
         }
 
-        return ApiResponse.success(boardImageService.createPresignedUpload(request));
+        S3ImagePresignService.PresignedUploadResult presigned =
+                s3ImagePresignService.createPresignedUpload(
+                        "boards",
+                        request.getFileName(),
+                        request.getContentType()
+                );
+
+        return ApiResponse.success(new BoardImagePresignResponse(
+                presigned.getUploadUrl(),
+                presigned.getFileUrl(),
+                presigned.getMethod()
+        ));
     }
 }

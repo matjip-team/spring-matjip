@@ -3,7 +3,12 @@ package com.restaurant.matjip.mypage.service;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
-import com.restaurant.matjip.mypage.dto.response.*;
+import com.restaurant.matjip.mypage.dto.response.CategroyResponse;
+import com.restaurant.matjip.mypage.dto.response.LikePageResponse;
+import com.restaurant.matjip.mypage.dto.response.LikeResponse;
+import com.restaurant.matjip.mypage.dto.response.ReviewPageResponse;
+import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
+import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
 import com.restaurant.matjip.mypage.repository.RestaurantLikeRepository2;
 import com.restaurant.matjip.mypage.repository.ReviewRepository2;
 import com.restaurant.matjip.users.domain.User;
@@ -43,10 +48,10 @@ public class MyPageService {
     private String uploadDir;
 
     @Value("${productImageLocation}")
-    private String productImageLocation ; // 기본 값 :
+    private String productImageLocation;
 
     @Transactional(readOnly = true)
-    public LikePageResponse getLikes(long l, Long cursorId, int limit) {
+    public LikePageResponse getLikes(long userId, Long cursorId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
         List<LikeResponse> like = restaurantLikeRepository.findNextLike(cursorId);
 
@@ -55,11 +60,10 @@ public class MyPageService {
         for (LikeResponse row : like) {
             Long restaurantId = row.getRestaurantId();
             LikeResponse existing = grouped.computeIfAbsent(restaurantId, id -> {
-                row.setCategories(new ArrayList<>()); // 항상 리스트 초기화
+                row.setCategories(new ArrayList<>());
                 return row;
             });
 
-            // categoryId가 있으면 리스트에 추가
             if (row.getCategoryId() != null) {
                 existing.getCategories().add(
                         new CategroyResponse(row.getCategoryId(), row.getCategoryName())
@@ -67,7 +71,6 @@ public class MyPageService {
             }
         }
 
-        // cursor 기반 limit 적용
         List<LikeResponse> page = grouped.values().stream()
                 .limit(limit)
                 .toList();
@@ -83,7 +86,6 @@ public class MyPageService {
 
     @Transactional(readOnly = true)
     public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
-
         Pageable pageable = PageRequest.of(0, limit);
         List<ReviewResponse> review = reviewRepository.findNextReview(cursorId);
 
@@ -92,11 +94,10 @@ public class MyPageService {
         for (ReviewResponse row : review) {
             Long restaurantId = row.getRestaurantId();
             ReviewResponse existing = grouped.computeIfAbsent(restaurantId, id -> {
-                row.setCategories(new ArrayList<>()); // 항상 리스트 초기화
+                row.setCategories(new ArrayList<>());
                 return row;
             });
 
-            // categoryId가 있으면 리스트에 추가
             if (row.getCategoryId() != null) {
                 existing.getCategories().add(
                         new CategroyResponse(row.getCategoryId(), row.getCategoryName())
@@ -104,7 +105,6 @@ public class MyPageService {
             }
         }
 
-        // cursor 기반 limit 적용
         List<ReviewResponse> page = grouped.values().stream()
                 .limit(limit)
                 .toList();
@@ -116,29 +116,32 @@ public class MyPageService {
 
     @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(long id) {
-
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        UserProfile userProfile = userProfileRepository.findById(user.getId()).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        UserProfile userProfile = userProfileRepository.findById(user.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         return UserInfoResponse.from(user, userProfile);
-
     }
 
     public void updateProfile(long id, UserInfoRequest request) {
-        // 패스워드 변경
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            User user = userRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-            // 회원 패스워드 변경
             userRepository.save(user);
         }
 
-        UserProfile userProfile = userProfileRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        UserProfile userProfile = userProfileRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        // 프로필 이미지 처리
+        String profileImageUrl = request.getProfileImageUrl();
+        if (profileImageUrl != null && !profileImageUrl.isBlank()) {
+            userProfile.setProfileImageUrl(profileImageUrl.trim());
+        }
+
         MultipartFile file = request.getProfileImage();
         if (file != null && !file.isEmpty()) {
             String originalFilename = file.getOriginalFilename();
@@ -150,34 +153,25 @@ public class MyPageService {
 
             File dest = Paths.get(productImageLocation, fileName).toFile();
             File parentDir = dest.getParentFile();
-            if (!parentDir.exists()) {
-                boolean created = parentDir.mkdirs();
-                if (!created) {
-                    throw new RuntimeException();
-                }
+            if (!parentDir.exists() && !parentDir.mkdirs()) {
+                throw new RuntimeException();
             }
-            boolean created = dest.getParentFile().mkdirs();
 
             try {
                 file.transferTo(dest);
             } catch (IOException e) {
                 throw new RuntimeException();
             }
-            // 기존 파일 삭제
+
             if (userProfile.getProfileImageUrl() != null) {
                 File oldFile = Paths.get(productImageLocation, userProfile.getProfileImageUrl()).toFile();
-                if (oldFile.exists()) {                    ;
-                    if (!oldFile.delete()) {
-                        //파일이없을 수도 있음
-                        //throw new BusinessException(ErrorCode.INTERNAL_ERROR);
-                        log.debug("삭제 실패");
-                    }
+                if (oldFile.exists() && !oldFile.delete()) {
+                    log.debug("delete failed");
                 }
             }
             userProfile.setProfileImageUrl(fileName);
         }
 
-        // 회원프로파일 변경
         userProfile.setNickname(request.getNickname());
         userProfile.setBio(request.getBio());
 
