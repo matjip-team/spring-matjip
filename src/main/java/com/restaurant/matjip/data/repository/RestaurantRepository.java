@@ -1,12 +1,12 @@
 package com.restaurant.matjip.data.repository;
 
 import com.restaurant.matjip.data.domain.Restaurant;
-<<<<<<< HEAD
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-=======
+
 import com.restaurant.matjip.data.domain.RestaurantApprovalStatus;
->>>>>>> 2ef3ff8c5daeb273fac23afe690422d3601bf8ec
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
-<<<<<<< HEAD
+
     /* 카테고리 + 이름/주소 검색 */
     @Query("""
     select distinct r from Restaurant r
@@ -30,7 +30,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     );
 
     /* Python 수집 중복 방지 */
-=======
     @Query("""
         select distinct r from Restaurant r
         left join r.categories c
@@ -45,6 +44,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     Optional<Restaurant> findByIdAndRegisteredById(Long id, Long registeredById);
 
->>>>>>> 2ef3ff8c5daeb273fac23afe690422d3601bf8ec
+
     boolean existsByExternalId(String externalId);
 }

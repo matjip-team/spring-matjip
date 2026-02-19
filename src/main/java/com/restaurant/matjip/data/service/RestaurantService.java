@@ -9,13 +9,11 @@ import com.restaurant.matjip.data.dto.*;
 import com.restaurant.matjip.data.repository.CategoryRepository;
 import com.restaurant.matjip.data.repository.RestaurantLikeRepository;
 import com.restaurant.matjip.data.repository.RestaurantRepository;
-<<<<<<< HEAD
 import com.restaurant.matjip.data.repository.ReviewRepository;
-=======
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.users.constant.UserRole;
->>>>>>> 2ef3ff8c5daeb273fac23afe690422d3601bf8ec
+
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +33,7 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final CategoryRepository categoryRepository;
-<<<<<<< HEAD
+
     private final ReviewRepository reviewRepository;
 
     // 좋아요
@@ -43,6 +41,8 @@ public class RestaurantService {
     private final UserRepository userRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    private final RestaurantLicenseFileService restaurantLicenseFileService;
 
     /* =====================================================
        🔥 목록 조회 (페이징 + 좋아요 포함)
@@ -89,18 +89,6 @@ public class RestaurantService {
                     liked
             );
         });
-=======
-    private final UserRepository userRepository;
-    private final RestaurantLicenseFileService restaurantLicenseFileService;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    public List<RestaurantListDTO> search(RestaurantSearchRequest request) {
-        return restaurantRepository.searchByCategories(request.getCategories())
-                .stream()
-                .map(RestaurantListDTO::from)
-                .toList();
->>>>>>> 2ef3ff8c5daeb273fac23afe690422d3601bf8ec
     }
 
     /* =====================================================
@@ -124,13 +112,6 @@ public class RestaurantService {
                 .toList();
     }
 
-<<<<<<< HEAD
-    /* =====================================================
-       🔥 상세 조회
-    ===================================================== */
-    @Transactional(readOnly = true)
-    public RestaurantDetailDTO getDetail(Long id, String currentUserEmail) {
-=======
     @Transactional
     public Long create(RestaurantCreateRequest request, Long userId) {
         User registrant = userRepository.findById(userId)
@@ -153,6 +134,60 @@ public class RestaurantService {
 
         return restaurantRepository.save(restaurant).getId();
     }
+
+    /* =====================================================
+       🔥 상세 조회
+    ===================================================== */
+    @Transactional(readOnly = true)
+    public RestaurantDetailDTO getDetail(Long id, String currentUserEmail) {
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("해당 맛집이 존재하지 않습니다. id=" + id)
+                );
+
+        Double avg = reviewRepository.findAverageRating(id);
+        double averageRating = avg == null
+                ? 0.0
+                : Math.round(avg * 10) / 10.0;
+
+        List<ReviewResponse> reviews =
+                reviewRepository.findByRestaurant_Id(id)
+                        .stream()
+                        .map(review ->
+                                ReviewResponse.from(review, currentUserEmail)
+                        )
+                        .toList();
+
+        int reviewCount = reviews.size();
+
+        long likeCount = likeRepository.countByRestaurant_Id(id);
+
+        boolean liked = false;
+
+        if (currentUserEmail != null) {
+            User user = userRepository
+                    .findByEmail(currentUserEmail)
+                    .orElse(null);
+
+            if (user != null) {
+                liked = likeRepository
+                        .existsByUser_IdAndRestaurant_Id(
+                                user.getId(),
+                                id
+                        );
+            }
+        }
+
+        return RestaurantDetailDTO.from(
+                restaurant,
+                averageRating,
+                reviewCount,
+                reviews,
+                likeCount,
+                liked
+        );
+    }
+
 
     @Transactional
     public void updateApprovalStatus(Long restaurantId, RestaurantApprovalStatus status, Long adminUserId) {
@@ -219,55 +254,8 @@ public class RestaurantService {
         restaurantLicenseFileService.deleteObject(restaurant.getBusinessLicenseFileUrl());
         restaurant.setBusinessLicenseFileUrl(null);
     }
->>>>>>> 2ef3ff8c5daeb273fac23afe690422d3601bf8ec
 
-        Restaurant restaurant = restaurantRepository.findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("해당 맛집이 존재하지 않습니다. id=" + id)
-                );
 
-        Double avg = reviewRepository.findAverageRating(id);
-        double averageRating = avg == null
-                ? 0.0
-                : Math.round(avg * 10) / 10.0;
-
-        List<ReviewResponse> reviews =
-                reviewRepository.findByRestaurant_Id(id)
-                        .stream()
-                        .map(review ->
-                                ReviewResponse.from(review, currentUserEmail)
-                        )
-                        .toList();
-
-        int reviewCount = reviews.size();
-
-        long likeCount = likeRepository.countByRestaurant_Id(id);
-
-        boolean liked = false;
-
-        if (currentUserEmail != null) {
-            User user = userRepository
-                    .findByEmail(currentUserEmail)
-                    .orElse(null);
-
-            if (user != null) {
-                liked = likeRepository
-                        .existsByUser_IdAndRestaurant_Id(
-                                user.getId(),
-                                id
-                        );
-            }
-        }
-
-        return RestaurantDetailDTO.from(
-                restaurant,
-                averageRating,
-                reviewCount,
-                reviews,
-                likeCount,
-                liked
-        );
-    }
 
     /* =====================================================
        🔥 Python 수집 기능 (복구 완료)
@@ -297,10 +285,7 @@ public class RestaurantService {
         }
 
         for (PythonRestaurantDto dto : response.getData()) {
-<<<<<<< HEAD
 
-=======
->>>>>>> 2ef3ff8c5daeb273fac23afe690422d3601bf8ec
             if (restaurantRepository.existsByExternalId(dto.getExternalId())) {
                 continue;
             }
@@ -316,7 +301,6 @@ public class RestaurantService {
 
             restaurant.setImageUrl(dto.getImageUrl());
             restaurant.setPhone(dto.getPhone());
-<<<<<<< HEAD
             restaurant.setDescription(dto.getDescription());
 
             if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
@@ -338,18 +322,19 @@ public class RestaurantService {
 
                     restaurant.addCategory(category);
                 }
-=======
-            restaurant.setApprovalStatus(RestaurantApprovalStatus.APPROVED);
 
-            if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
-                applyCategories(restaurant, Arrays.stream(dto.getCategory().split(">"))
-                        .map(String::trim)
-                        .filter(s -> !s.isBlank())
-                        .toList());
->>>>>>> 2ef3ff8c5daeb273fac23afe690422d3601bf8ec
+                restaurant.setApprovalStatus(RestaurantApprovalStatus.APPROVED);
+
+                if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
+                    applyCategories(restaurant, Arrays.stream(dto.getCategory().split(">"))
+                            .map(String::trim)
+                            .filter(s -> !s.isBlank())
+                            .toList());
+
+                }
+
+                restaurantRepository.save(restaurant);
             }
-
-            restaurantRepository.save(restaurant);
         }
     }
 
