@@ -1,13 +1,13 @@
-package com.restaurant.matjip.community.dto.response;
+package com.restaurant.matjip.blog.dto.response;
 
-import com.restaurant.matjip.community.domain.Board;
-import com.restaurant.matjip.community.domain.BoardType;
+import com.restaurant.matjip.blog.domain.Blog;
+import com.restaurant.matjip.blog.domain.BlogType;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
-public class BoardDetailResponse {
+public class BlogDetailResponse {
 
     private Long id;
     private String title;
@@ -24,11 +24,11 @@ public class BoardDetailResponse {
     private Long authorId;
     private String authorNickname;
 
-    private BoardType boardType;
+    private BlogType boardType;
     private String imageUrl;
     private int commentCount;
 
-    public BoardDetailResponse(Board board, boolean recommended, int commentCount) {
+    public BlogDetailResponse(Blog board, boolean recommended, int commentCount) {
         this.id = board.getId();
         this.title = board.getTitle();
         this.content = board.getContent();

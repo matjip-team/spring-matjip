@@ -1,10 +1,10 @@
-package com.restaurant.matjip.community.service;
+package com.restaurant.matjip.blog.service;
 
-import com.restaurant.matjip.community.domain.Board;
-import com.restaurant.matjip.community.dto.request.BoardCreateRequest;
-import com.restaurant.matjip.community.dto.request.BoardUpdateRequest;
-import com.restaurant.matjip.community.repository.BoardRepository;
-import com.restaurant.matjip.community.repository.BoardViewRepository;
+import com.restaurant.matjip.blog.domain.Blog;
+import com.restaurant.matjip.blog.dto.request.BlogCreateRequest;
+import com.restaurant.matjip.blog.dto.request.BlogUpdateRequest;
+import com.restaurant.matjip.blog.repository.BlogRepository;
+import com.restaurant.matjip.blog.repository.BlogViewRepository;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,23 +13,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class BoardCommandService {
+public class BlogCommandService {
 
-    private final BoardRepository boardRepository;
+    private final BlogRepository boardRepository;
     private final UserRepository userRepository;
-    private final BoardViewRepository boardViewRepository;
+    private final BlogViewRepository boardViewRepository;
 
     @Transactional
-    public Long create(BoardCreateRequest request, Long userId) {
+    public Long create(BlogCreateRequest request, Long userId) {
         User writer = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("user not found"));
 
-        Board board = Board.builder()
+        Blog board = Blog.builder()
                 .title(request.getTitle())
                 .content(resolvePrimaryContent(request.getContent(), request.getContentHtml(), null))
                 .contentHtml(resolveHtmlContent(request.getContentHtml(), request.getContent(), null))
                 .contentDelta(blankToNull(request.getContentDelta()))
                 .boardType(request.getBoardType())
+                .imageUrl(blankToNull(request.getImageUrl()))
                 .user(writer)
                 .viewCount(0)
                 .recommendCount(0)
@@ -39,8 +40,8 @@ public class BoardCommandService {
     }
 
     @Transactional
-    public void update(Long boardId, Long userId, BoardUpdateRequest req) {
-        Board board = boardRepository.findById(boardId)
+    public void update(Long boardId, Long userId, BlogUpdateRequest req) {
+        Blog board = boardRepository.findById(boardId)
                 .orElseThrow();
 
         if (!board.getUser().getId().equals(userId)) {
@@ -51,12 +52,13 @@ public class BoardCommandService {
         board.setContent(resolvePrimaryContent(req.getContent(), req.getContentHtml(), board.getContent()));
         board.setContentHtml(resolveHtmlContent(req.getContentHtml(), req.getContent(), board.getContentHtml()));
         board.setContentDelta(blankToNull(req.getContentDelta()));
+        board.setImageUrl(blankToNull(req.getImageUrl()));
         board.setBoardType(req.getBoardType());
     }
 
     @Transactional
     public void delete(Long boardId, Long userId) {
-        Board board = boardRepository.findById(boardId)
+        Blog board = boardRepository.findById(boardId)
                 .orElseThrow();
 
         if (!board.getUser().getId().equals(userId)) {

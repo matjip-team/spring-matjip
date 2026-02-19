@@ -36,14 +36,14 @@ public class MyPageController {
 
     @GetMapping("/profile")
     public ApiResponse<UserInfoResponse> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        return ApiResponse.success(myPageService.getUserInfo(1L));
+        return ApiResponse.success(myPageService.getUserInfo(customUserDetails.getId()));
     }
 
     @PutMapping("/profile")
     public ApiResponse<Void> updateProfile(
             @ModelAttribute @Valid UserInfoRequest request, @AuthenticationPrincipal CustomUserDetails customUserDetails, Locale locale) {
 
-        myPageService.updateProfile(1L,request);
+        myPageService.updateProfile(customUserDetails.getId(), request);
         String msg = messageSource.getMessage("success.user.updated",null, locale);
         return ApiResponse.success(msg);
     }

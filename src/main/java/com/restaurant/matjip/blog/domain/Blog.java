@@ -1,4 +1,4 @@
-package com.restaurant.matjip.community.domain;
+package com.restaurant.matjip.blog.domain;
 
 import com.restaurant.matjip.common.domain.BaseEntity;
 import com.restaurant.matjip.users.domain.User;
@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "boards")
+@Table(name = "blogs")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Board extends BaseEntity {
+public class Blog extends BaseEntity {
 
     /* ================== 기본 컬럼 ================== */
 
@@ -37,7 +37,7 @@ public class Board extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "board_type", nullable = false)
-    private BoardType boardType;
+    private BlogType boardType;
 
     @Column(name = "view_count", nullable = false)
     private int viewCount;
@@ -56,10 +56,10 @@ public class Board extends BaseEntity {
 
      //댓글
      @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-     private List<Comment> comments = new ArrayList<>();
+     private List<BlogComment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoardRecommendation> recommendations = new ArrayList<>();
+    private List<BlogRecommendation> recommendations = new ArrayList<>();
 
     /* ================== 비즈니스 메서드 ================== */
 
@@ -77,3 +77,6 @@ public class Board extends BaseEntity {
         }
     }
 }
+
+
+
