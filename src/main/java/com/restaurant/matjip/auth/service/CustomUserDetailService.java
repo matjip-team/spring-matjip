@@ -37,6 +37,7 @@ public class CustomUserDetailService implements UserDetailsService {
                 .name(user.getName())
                 .nickname(user.getNickname())
                 .password(user.getPasswordHash())
+                .profileImageUrl(user.getProfile().getProfileImageUrl())
                 .authorities(List.of(new SimpleGrantedAuthority(authority)))
                 .build();
     }

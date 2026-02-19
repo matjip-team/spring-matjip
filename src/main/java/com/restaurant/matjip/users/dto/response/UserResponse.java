@@ -17,6 +17,7 @@ public class UserResponse {
     private String name;
     private String nickname;
     private String role;
+    private String profileImageUrl;
     private String status;
 
     public static UserResponse from(User user) {
@@ -26,6 +27,7 @@ public class UserResponse {
                 user.getName(),
                 user.getNickname(),
                 user.getRole().name(),
+                user.getProfile().getProfileImageUrl(),
                 user.getStatus().name()
         );
     }
