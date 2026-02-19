@@ -32,7 +32,7 @@ public class BlogRecommendationScore extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id", nullable = false)
-    private Blog board;
+    private Blog blog;
 
     /* ================== 추천한 유저 ================== */
 

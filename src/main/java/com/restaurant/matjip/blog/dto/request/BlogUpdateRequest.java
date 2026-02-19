@@ -12,7 +12,7 @@ public class BlogUpdateRequest {
     private String contentHtml;
     private String contentDelta;
     private String imageUrl;
-    private BlogType boardType;
+    private BlogType blogType;
 }
 
 

@@ -27,7 +27,7 @@ public class BlogRecommendation  extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id")
-    private Blog board;
+    private Blog blog;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

@@ -1,6 +1,6 @@
 INSERT INTO users (created_at, created_by, updated_at, updated_by, email, name, nickname, password_hash, role, status)
 VALUES
-(NOW(), 1, NOW(), 1, 'test@naver.com', '홍길동', '길동', '{noop}12345678', 'USER', 'ACTIVE'),
+(NOW(), 1, NOW(), 1, 'test@naver.com', '홍길동', '길동', '{noop}12345678', 'ADMIN', 'ACTIVE'),
 (NOW(), 1, NOW(), 1, 'user2@example.com', '김철수', '철수', '{noop}12345678', 'USER', 'ACTIVE');
 
 INSERT INTO `user_profiles`

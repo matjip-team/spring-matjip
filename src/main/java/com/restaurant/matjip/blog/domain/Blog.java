@@ -37,7 +37,7 @@ public class Blog extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "board_type", nullable = false)
-    private BlogType boardType;
+    private BlogType blogType;
 
     @Column(name = "view_count", nullable = false)
     private int viewCount;
@@ -55,10 +55,10 @@ public class Blog extends BaseEntity {
     private User user;
 
      //댓글
-     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+     @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
      private List<BlogComment> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BlogRecommendation> recommendations = new ArrayList<>();
 
     /* ================== 비즈니스 메서드 ================== */

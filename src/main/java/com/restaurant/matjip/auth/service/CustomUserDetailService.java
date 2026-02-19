@@ -6,6 +6,7 @@ import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,8 +28,7 @@ public class CustomUserDetailService implements UserDetailsService {
                         new BusinessException(ErrorCode.USER_NOT_FOUND)
                 );
 
-        // TODO : 정의되면 구현해야함
-        String role = "ROLE_USER";
+        String authority = "ROLE_" + user.getRole().name();
 
         return CustomUserDetails.builder()
                 .id(user.getId())
@@ -37,7 +37,7 @@ public class CustomUserDetailService implements UserDetailsService {
                 .name(user.getName())
                 .nickname(user.getNickname())
                 .password(user.getPasswordHash())
-                .authorities(List.of(() -> role))
+                .authorities(List.of(new SimpleGrantedAuthority(authority)))
                 .build();
     }
 }

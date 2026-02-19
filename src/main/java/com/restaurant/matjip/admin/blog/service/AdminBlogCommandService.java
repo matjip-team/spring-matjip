@@ -1,23 +1,27 @@
-package com.restaurant.matjip.blog.service;
+package com.restaurant.matjip.admin.blog.service;
 
 import com.restaurant.matjip.blog.domain.Blog;
 import com.restaurant.matjip.blog.dto.request.BlogCreateRequest;
 import com.restaurant.matjip.blog.dto.request.BlogUpdateRequest;
-import com.restaurant.matjip.blog.repository.BlogRepository;
-import com.restaurant.matjip.blog.repository.BlogViewRepository;
+import com.restaurant.matjip.admin.blog.repository.AdminBlogRepository;
+import com.restaurant.matjip.admin.blog.repository.AdminBlogViewRepository;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 관리자 블로그 명령 서비스
+ * - ADMIN 역할: 모든 사용자의 블로그 수정/삭제 가능 (ownership 체크 없음)
+ */
 @Service
 @RequiredArgsConstructor
-public class BlogCommandService {
+public class AdminBlogCommandService {
 
-    private final BlogRepository blogRepository;
+    private final AdminBlogRepository blogRepository;
     private final UserRepository userRepository;
-    private final BlogViewRepository blogViewRepository;
+    private final AdminBlogViewRepository blogViewRepository;
 
     @Transactional
     public Long create(BlogCreateRequest request, Long userId) {
@@ -39,14 +43,14 @@ public class BlogCommandService {
         return blogRepository.save(blog).getId();
     }
 
+    /**
+     * 관리자 슈퍼권한: 작성자 여부 체크 없이 수정 가능
+     */
     @Transactional
-    public void update(Long blogId, Long userId, BlogUpdateRequest req) {
+    public void update(Long blogId, Long adminUserId, BlogUpdateRequest req) {
         Blog blog = blogRepository.findById(blogId)
-                .orElseThrow();
-
-        if (!blog.getUser().getId().equals(userId)) {
-            throw new RuntimeException("no permission");
-        }
+                .orElseThrow(() -> new IllegalStateException("blog not found"));
+        // ADMIN은 ownership 체크 생략
 
         blog.setTitle(req.getTitle());
         blog.setContent(resolvePrimaryContent(req.getContent(), req.getContentHtml(), blog.getContent()));
@@ -56,44 +60,33 @@ public class BlogCommandService {
         blog.setBlogType(req.getBlogType());
     }
 
+    /**
+     * 관리자 슈퍼권한: 작성자 여부 체크 없이 삭제 가능
+     */
     @Transactional
-    public void delete(Long blogId, Long userId) {
+    public void delete(Long blogId, Long adminUserId) {
         Blog blog = blogRepository.findById(blogId)
-                .orElseThrow();
-
-        if (!blog.getUser().getId().equals(userId)) {
-            throw new RuntimeException("no permission");
-        }
+                .orElseThrow(() -> new IllegalStateException("blog not found"));
+        // ADMIN은 ownership 체크 생략
 
         blogViewRepository.deleteByBlogId(blogId);
         blogRepository.delete(blog);
     }
 
     private String resolvePrimaryContent(String content, String contentHtml, String fallback) {
-        if (hasText(content)) {
-            return content;
-        }
-        if (hasText(contentHtml)) {
-            return contentHtml;
-        }
+        if (hasText(content)) return content;
+        if (hasText(contentHtml)) return contentHtml;
         return fallback;
     }
 
     private String resolveHtmlContent(String contentHtml, String content, String fallback) {
-        if (hasText(contentHtml)) {
-            return contentHtml;
-        }
-        if (hasText(content)) {
-            return content;
-        }
+        if (hasText(contentHtml)) return contentHtml;
+        if (hasText(content)) return content;
         return fallback;
     }
 
     private String blankToNull(String value) {
-        if (!hasText(value)) {
-            return null;
-        }
-        return value.trim();
+        return (value != null && !value.isBlank()) ? value.trim() : null;
     }
 
     private boolean hasText(String value) {

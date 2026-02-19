@@ -1,4 +1,4 @@
-package com.restaurant.matjip.blog.repository;
+package com.restaurant.matjip.admin.blog.repository;
 
 import com.restaurant.matjip.blog.domain.Blog;
 import com.restaurant.matjip.blog.domain.BlogType;
@@ -7,17 +7,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface BlogRepository extends JpaRepository<Blog, Long> {
-
-    /* ================== 공지 목록 (상단 고정용) ================== */
+/**
+ * 관리자 블로그용 Repository - JpaRepository 직접 상속, 동일 엔티티(blogs) 사용
+ */
+@Repository
+public interface AdminBlogRepository extends JpaRepository<Blog, Long> {
 
     List<Blog> findByBlogTypeOrderByIdDesc(BlogType blogType);
-
-
-    /* ================== 일반 게시글 검색 + 필터 + 페이징 ================== */
 
     @Query("""
         SELECT b FROM Blog b
@@ -37,8 +37,6 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
             Pageable pageable
     );
 
-    /* ================== 제목 검색 ================== */
-
     @Query("""
 select b from Blog b
 where b.blogType <> 'NOTICE'
@@ -51,9 +49,6 @@ order by b.id desc
             String keyword,
             Pageable pageable
     );
-
-
-    /* ================== 내용 검색 ================== */
 
     @Query("""
 select b from Blog b
@@ -68,9 +63,6 @@ order by b.id desc
             Pageable pageable
     );
 
-
-    /* ================== 글쓴이 검색 ================== */
-
     @Query("""
 select b from Blog b
 join b.user u
@@ -84,9 +76,6 @@ order by b.id desc
             String keyword,
             Pageable pageable
     );
-
-
-    /* ================== 댓글 검색 ================== */
 
     @Query("""
 select distinct b from Blog b
@@ -103,4 +92,3 @@ order by b.id desc
             Pageable pageable
     );
 }
-
