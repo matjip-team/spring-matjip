@@ -4,14 +4,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.restaurant.matjip.data.domain.Category;
 import com.restaurant.matjip.data.domain.Restaurant;
+import com.restaurant.matjip.data.domain.RestaurantApprovalStatus;
 import com.restaurant.matjip.data.dto.*;
 import com.restaurant.matjip.data.repository.CategoryRepository;
 import com.restaurant.matjip.data.repository.RestaurantRepository;
+import com.restaurant.matjip.global.exception.BusinessException;
+import com.restaurant.matjip.global.exception.ErrorCode;
+import com.restaurant.matjip.users.constant.UserRole;
+import com.restaurant.matjip.users.domain.User;
+import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -20,12 +27,10 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final RestaurantLicenseFileService restaurantLicenseFileService;
 
     private final RestTemplate restTemplate = new RestTemplate();
-
-    /* =========================
-       기존 조회 기능 (유지)
-       ========================= */
 
     public List<RestaurantListDTO> search(RestaurantSearchRequest request) {
         return restaurantRepository.searchByCategories(request.getCategories())
@@ -41,50 +46,124 @@ public class RestaurantService {
                 .toList();
     }
 
-    /* =========================
-        Python 수집 기능 (최종본)
-       ========================= */
+    @Transactional
+    public Long create(RestaurantCreateRequest request, Long userId) {
+        User registrant = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Restaurant restaurant = Restaurant.builder()
+                .name(request.getName().trim())
+                .address(request.getAddress().trim())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .phone(blankToNull(request.getPhone()))
+                .description(blankToNull(request.getDescription()))
+                .businessLicenseFileUrl(request.getBusinessLicenseFileKey().trim())
+                .source("USER")
+                .approvalStatus(RestaurantApprovalStatus.PENDING)
+                .registeredBy(registrant)
+                .build();
+
+        applyCategories(restaurant, request.getCategoryNames());
+
+        return restaurantRepository.save(restaurant).getId();
+    }
+
+    @Transactional
+    public void updateApprovalStatus(Long restaurantId, RestaurantApprovalStatus status, Long adminUserId) {
+        assertAdmin(adminUserId);
+
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        if (restaurant.getApprovalStatus() != RestaurantApprovalStatus.PENDING) {
+            throw new BusinessException(ErrorCode.RESTAURANT_REQUEST_NOT_PENDING);
+        }
+
+        restaurant.setApprovalStatus(status);
+        restaurantLicenseFileService.deleteObject(restaurant.getBusinessLicenseFileUrl());
+        restaurant.setBusinessLicenseFileUrl(null);
+    }
+
+    @Transactional(readOnly = true)
+    public String getLicenseViewUrlForAdmin(Long restaurantId, Long adminUserId) {
+        assertAdmin(adminUserId);
+
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        String fileKey = restaurant.getBusinessLicenseFileUrl();
+        if (fileKey == null || fileKey.isBlank()) {
+            throw new IllegalArgumentException("No business license file found");
+        }
+
+        return restaurantLicenseFileService.createPresignedViewUrl(fileKey);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RestaurantAdminListDTO> getByApprovalStatusForAdmin(
+            RestaurantApprovalStatus status,
+            Long adminUserId
+    ) {
+        assertAdmin(adminUserId);
+
+        return restaurantRepository.findAllByApprovalStatusOrderByCreatedAtDesc(status)
+                .stream()
+                .map(RestaurantAdminListDTO::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<RestaurantMyRequestDTO> getMyRequests(Long userId) {
+        return restaurantRepository.findAllByRegisteredByIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(RestaurantMyRequestDTO::from)
+                .toList();
+    }
+
+    @Transactional
+    public void cancelMyRequest(Long requestId, Long userId) {
+        Restaurant restaurant = restaurantRepository.findByIdAndRegisteredById(requestId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        if (restaurant.getApprovalStatus() != RestaurantApprovalStatus.PENDING) {
+            throw new BusinessException(ErrorCode.RESTAURANT_REQUEST_NOT_PENDING);
+        }
+
+        restaurant.setApprovalStatus(RestaurantApprovalStatus.CANCELLED);
+        restaurantLicenseFileService.deleteObject(restaurant.getBusinessLicenseFileUrl());
+        restaurant.setBusinessLicenseFileUrl(null);
+    }
 
     @Transactional
     public void collectFromPython() {
-
         String url = "http://127.0.0.1:8000/collect";
 
-        /* 1️⃣ Python 응답을 String(JSON)으로 받기 */
         String rawJson = restTemplate.postForObject(url, null, String.class);
 
         if (rawJson == null || rawJson.isBlank()) {
-            throw new RuntimeException("Python 수집 결과(JSON)가 비어있습니다.");
+            throw new RuntimeException("Python collect response is empty.");
         }
 
-        /* 2️⃣ ObjectMapper에 snake_case 명시 */
         ObjectMapper mapper = new ObjectMapper();
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
         PythonCollectResponse response;
         try {
-            /* 3️⃣ JSON → DTO 직접 파싱 (핵심) */
             response = mapper.readValue(rawJson, PythonCollectResponse.class);
         } catch (Exception e) {
-            throw new RuntimeException("Python 응답 파싱 실패", e);
+            throw new RuntimeException("Failed to parse Python collect response", e);
         }
 
         if (response.getData() == null) {
-            throw new RuntimeException("Python 수집 데이터가 없습니다.");
+            throw new RuntimeException("Python collect response has no data.");
         }
 
-        /* 4️⃣ DB 저장 */
         for (PythonRestaurantDto dto : response.getData()) {
-
-            /* 디버그 로그 (한 번 확인 후 지워도 됨) */
-            System.out.println("IMAGE CHECK = " + dto.getImageUrl());
-
-            /* 4-1️⃣ 중복 방지 */
             if (restaurantRepository.existsByExternalId(dto.getExternalId())) {
                 continue;
             }
 
-            /* 4-2️⃣ Restaurant 생성 */
             Restaurant restaurant = Restaurant.fromPython(
                     dto.getExternalId(),
                     dto.getName(),
@@ -94,34 +173,54 @@ public class RestaurantService {
                     dto.getSource()
             );
 
-            /* 🔥 이미지 URL 저장 (문제 해결 핵심) */
             restaurant.setImageUrl(dto.getImageUrl());
-
-            /* 기타 필드 */
             restaurant.setPhone(dto.getPhone());
+            restaurant.setApprovalStatus(RestaurantApprovalStatus.APPROVED);
 
-            /* 4-3️⃣ 카테고리 매핑 */
             if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
-
-                String[] categoryNames = dto.getCategory().split(">");
-
-                for (String raw : categoryNames) {
-                    String name = raw.trim();
-
-                    Category category = categoryRepository
-                            .findByName(name)
-                            .orElseGet(() ->
-                                    categoryRepository.save(
-                                            Category.builder().name(name).build()
-                                    )
-                            );
-
-                    restaurant.addCategory(category);
-                }
+                applyCategories(restaurant, Arrays.stream(dto.getCategory().split(">"))
+                        .map(String::trim)
+                        .filter(s -> !s.isBlank())
+                        .toList());
             }
 
-            /* 4-4️⃣ 저장 */
             restaurantRepository.save(restaurant);
+        }
+    }
+
+    private void applyCategories(Restaurant restaurant, List<String> categoryNames) {
+        if (categoryNames == null) {
+            return;
+        }
+
+        for (String raw : categoryNames) {
+            if (raw == null || raw.isBlank()) {
+                continue;
+            }
+
+            String name = raw.trim();
+
+            Category category = categoryRepository
+                    .findByName(name)
+                    .orElseGet(() -> categoryRepository.save(Category.builder().name(name).build()));
+
+            restaurant.addCategory(category);
+        }
+    }
+
+    private String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private void assertAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getRole() != UserRole.ADMIN) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ERROR);
         }
     }
 }

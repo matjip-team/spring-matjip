@@ -1,7 +1,7 @@
-package com.restaurant.matjip.community.dto.response;
+package com.restaurant.matjip.blog.dto.response;
 
-import com.restaurant.matjip.community.domain.Board;
-import com.restaurant.matjip.community.domain.BoardType;
+import com.restaurant.matjip.blog.domain.Blog;
+import com.restaurant.matjip.blog.domain.BlogType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 @Getter
 @AllArgsConstructor
-public class BoardListResponse {
+public class BlogListResponse {
 
     private static final Pattern IMAGE_TAG_PATTERN =
             Pattern.compile("<img[\\s>]", Pattern.CASE_INSENSITIVE);
@@ -18,22 +18,23 @@ public class BoardListResponse {
             Pattern.compile("<(video|iframe)[\\s>]", Pattern.CASE_INSENSITIVE);
 
     private Long id;
-    private BoardType boardType;
+    private BlogType boardType;
     private String title;
     private String authorNickname;
     private int viewCount;
     private int recommendCount;
     private LocalDateTime createdAt;
     private int commentCount;
+    private String imageUrl;
     private boolean hasImage;
     private boolean hasVideo;
 
-    public static BoardListResponse from(Board board, int commentCount) {
+    public static BlogListResponse from(Blog board, int commentCount) {
         String content = board.getContent() == null ? "" : board.getContent();
         boolean hasImage = hasImage(board, content);
         boolean hasVideo = hasVideo(content);
 
-        return new BoardListResponse(
+        return new BlogListResponse(
                 board.getId(),
                 board.getBoardType(),
                 board.getTitle(),
@@ -42,16 +43,17 @@ public class BoardListResponse {
                 board.getRecommendCount(),
                 board.getCreatedAt(),
                 commentCount,
+                board.getImageUrl(),
                 hasImage,
                 hasVideo
         );
     }
 
-    private static boolean hasImage(Board board, String content) {
+    private static boolean hasImage(Blog board, String content) {
         return hasImageUrl(board) || IMAGE_TAG_PATTERN.matcher(content).find();
     }
 
-    private static boolean hasImageUrl(Board board) {
+    private static boolean hasImageUrl(Blog board) {
         String imageUrl = board.getImageUrl();
         return imageUrl != null && !imageUrl.isBlank();
     }
@@ -60,3 +62,5 @@ public class BoardListResponse {
         return VIDEO_TAG_PATTERN.matcher(content).find();
     }
 }
+
+

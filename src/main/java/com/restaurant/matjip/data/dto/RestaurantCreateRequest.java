@@ -1,5 +1,6 @@
 package com.restaurant.matjip.data.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,13 +11,19 @@ import java.util.List;
 @Setter
 public class RestaurantCreateRequest {
 
+    @NotBlank(message = "Restaurant name is required")
     private String name;
+
+    @NotBlank(message = "Address is required")
     private String address;
+
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String phone;
     private String description;
 
-    /** Python 수집기에서 문자열로 전달 */
+    @NotBlank(message = "Business license file is required")
+    private String businessLicenseFileKey;
+
     private List<String> categoryNames;
 }

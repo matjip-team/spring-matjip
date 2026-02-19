@@ -1,13 +1,13 @@
-package com.restaurant.matjip.community.dto.request;
+package com.restaurant.matjip.blog.dto.request;
 
-import com.restaurant.matjip.community.domain.BoardType;
+import com.restaurant.matjip.blog.domain.BlogType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public class BoardCreateRequest {
+public class BlogCreateRequest {
 
     @NotBlank(message = "Please enter a title.")
     @Size(min = 2, message = "Title must be at least 2 characters.")
@@ -19,6 +19,8 @@ public class BoardCreateRequest {
     private String contentHtml;
     private String contentDelta;
 
-    @NotNull(message = "Board type is required.")
-    private BoardType boardType;
+    @NotNull(message = "Blog type is required.")
+    private BlogType boardType;
+
+    private String imageUrl;
 }

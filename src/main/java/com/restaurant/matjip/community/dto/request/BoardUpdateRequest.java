@@ -8,6 +8,10 @@ public class BoardUpdateRequest {
 
     private String title;
     private String content;
+
+    private String contentHtml;
+    private String contentDelta;
     private BoardType boardType;
 }
+
 
