@@ -23,17 +23,16 @@ public class ReviewService {
     private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
 
-    /** 리뷰 작성 */
-    public void create(Long userId, Long restaurantId, ReviewCreateRequest request) {
-        if (reviewRepository.existsByUser_IdAndRestaurant_Id(userId, restaurantId)) {
-            throw new IllegalStateException("이미 리뷰를 작성했습니다.");
-        }
+    /* ================= 리뷰 작성 ================= */
+    public void createByEmail(String email, Long restaurantId, ReviewCreateRequest request) {
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
+
+        validateRating(request.getRating());
 
         Review review = new Review(
                 user,
@@ -45,19 +44,55 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
-    /** 리뷰 목록 */
+    /* ================= 리뷰 수정 ================= */
+    public void updateByEmail(String email, Long reviewId, ReviewCreateRequest request) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Review review = reviewRepository.findByIdAndUser_Id(reviewId, user.getId())
+                .orElseThrow(() -> new IllegalStateException("수정 권한이 없습니다."));
+
+        validateRating(request.getRating());
+
+        review.update(request.getRating(), request.getContent());
+    }
+
+    /* ================= 리뷰 삭제 ================= */
+    public void deleteByEmail(String email, Long reviewId) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Review review = reviewRepository.findByIdAndUser_Id(reviewId, user.getId())
+                .orElseThrow(() -> new IllegalStateException("삭제 권한이 없습니다."));
+
+        reviewRepository.delete(review);
+    }
+
+    /* ================= 리뷰 목록 ================= */
     @Transactional(readOnly = true)
-    public List<ReviewResponse> getReviews(Long restaurantId) {
+    public List<ReviewResponse> getReviews(Long restaurantId, String currentUserEmail) {
+
         return reviewRepository.findByRestaurant_Id(restaurantId)
                 .stream()
-                .map(ReviewResponse::from)
+                .map(review -> ReviewResponse.from(review, currentUserEmail))
                 .toList();
     }
 
-    /** 평균 평점 */
+    /* ================= 평균 평점 ================= */
     @Transactional(readOnly = true)
     public double getAverageRating(Long restaurantId) {
+
         Double avg = reviewRepository.findAverageRating(restaurantId);
+
         return avg == null ? 0.0 : Math.round(avg * 10) / 10.0;
+    }
+
+    /* ================= 평점 검증 ================= */
+    private void validateRating(int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("평점은 1~5 사이여야 합니다.");
+        }
     }
 }

@@ -1,12 +1,12 @@
 package com.restaurant.matjip.data.controller;
 
-import com.restaurant.matjip.data.dto.RestaurantListDTO;
-import com.restaurant.matjip.data.dto.RestaurantMapDTO;
-import com.restaurant.matjip.data.dto.RestaurantSearchRequest;
+import com.restaurant.matjip.data.dto.*;
 import com.restaurant.matjip.data.service.RestaurantService;
 import com.restaurant.matjip.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,23 +18,64 @@ public class RestaurantController {
 
     private final RestaurantService restaurantService;
 
-    /* 맛집 리스트 */
+    /* ================= 목록 조회 ================= */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<RestaurantListDTO>> getRestaurants(
-            RestaurantSearchRequest request
+    public ApiResponse<Page<RestaurantListDTO>> getRestaurants(
+            RestaurantSearchRequest request,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "9") int size,
+            Authentication authentication
     ) {
-        List<RestaurantListDTO> response = restaurantService.search(request);
-        return ApiResponse.success(response);
+
+        String email = extractEmail(authentication);
+
+        return ApiResponse.success(
+                restaurantService.search(request, page, size, email)
+        );
     }
 
-    /* 지도용 맛집 */
+    /* ================= 지도 조회 ================= */
     @GetMapping("/map")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<RestaurantMapDTO>> getRestaurantsForMap(
             RestaurantSearchRequest request
     ) {
-        List<RestaurantMapDTO> response = restaurantService.searchForMap(request);
-        return ApiResponse.success(response);
+        return ApiResponse.success(
+                restaurantService.searchForMap(request)
+        );
+    }
+
+    /* ================= 상세 조회 ================= */
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<RestaurantDetailDTO> getRestaurantDetail(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+
+        String email = extractEmail(authentication);
+
+        return ApiResponse.success(
+                restaurantService.getDetail(id, email)
+        );
+    }
+
+    /* ================= 로그인 이메일 추출 ================= */
+    private String extractEmail(Authentication authentication) {
+
+        if (authentication == null) {
+            return null;
+        }
+
+        if (!authentication.isAuthenticated()) {
+            return null;
+        }
+
+        if ("anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+
+        return authentication.getName();
     }
 }

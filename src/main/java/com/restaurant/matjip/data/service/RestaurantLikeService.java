@@ -19,14 +19,16 @@ public class RestaurantLikeService {
     private final RestaurantRepository restaurantRepository;
     private final UserRepository userRepository;
 
-    /** 좋아요 */
-    public void like(Long userId, Long restaurantId) {
-        if (likeRepository.existsByUser_IdAndRestaurant_Id(userId, restaurantId)) {
-            return; // 팀 정책: 중복 좋아요는 무시
-        }
+    /* ================= 좋아요 ================= */
 
-        User user = userRepository.findById(userId)
+    public void likeByEmail(String email, Long restaurantId) {
+
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (likeRepository.existsByUser_IdAndRestaurant_Id(user.getId(), restaurantId)) {
+            return;
+        }
 
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new IllegalArgumentException("Restaurant not found"));
@@ -34,12 +36,18 @@ public class RestaurantLikeService {
         likeRepository.save(new RestaurantLike(user, restaurant));
     }
 
-    /** 좋아요 취소 */
-    public void unlike(Long userId, Long restaurantId) {
-        likeRepository.deleteByUser_IdAndRestaurant_Id(userId, restaurantId);
+    /* ================= 좋아요 취소 ================= */
+
+    public void unlikeByEmail(String email, Long restaurantId) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        likeRepository.deleteByUser_IdAndRestaurant_Id(user.getId(), restaurantId);
     }
 
-    /** 좋아요 개수 */
+    /* ================= 좋아요 개수 ================= */
+
     @Transactional(readOnly = true)
     public long count(Long restaurantId) {
         return likeRepository.countByRestaurant_Id(restaurantId);

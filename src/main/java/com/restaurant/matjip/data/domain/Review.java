@@ -9,12 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
 
 @Entity
-@Table(
-        name = "reviews",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "restaurant_id"})
-        }
-)
+@Table(name = "reviews") // 🔥 unique 제거
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,7 +20,7 @@ public class Review extends BaseEntity {
     @Comment("리뷰 아이디")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @Comment("사용자 아이디")
     private User user;
@@ -36,8 +31,8 @@ public class Review extends BaseEntity {
     private Restaurant restaurant;
 
     @Comment("평가")
-    @Column(nullable = false)    
-    private int rating; // 1~5
+    @Column(nullable = false)
+    private int rating;
 
     @Comment("리뷰내용")
     @Column(columnDefinition = "TEXT")

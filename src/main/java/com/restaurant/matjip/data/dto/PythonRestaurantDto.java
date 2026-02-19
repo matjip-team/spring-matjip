@@ -18,6 +18,7 @@ public class PythonRestaurantDto {
     private String category;
     private String phone;
     private String source;
+    private String description;
 
     @JsonProperty("image_url")
     private String imageUrl;

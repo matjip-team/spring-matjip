@@ -6,8 +6,15 @@ import com.restaurant.matjip.data.domain.Category;
 import com.restaurant.matjip.data.domain.Restaurant;
 import com.restaurant.matjip.data.dto.*;
 import com.restaurant.matjip.data.repository.CategoryRepository;
+import com.restaurant.matjip.data.repository.RestaurantLikeRepository;
 import com.restaurant.matjip.data.repository.RestaurantRepository;
+import com.restaurant.matjip.data.repository.ReviewRepository;
+import com.restaurant.matjip.users.domain.User;
+import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -20,50 +27,155 @@ public class RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final CategoryRepository categoryRepository;
+    private final ReviewRepository reviewRepository;
+
+    // 좋아요
+    private final RestaurantLikeRepository likeRepository;
+    private final UserRepository userRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    /* =========================
-       기존 조회 기능 (유지)
-       ========================= */
+    /* =====================================================
+       🔥 목록 조회 (페이징 + 좋아요 포함)
+    ===================================================== */
+    public Page<RestaurantListDTO> search(
+            RestaurantSearchRequest request,
+            int page,
+            int size,
+            String currentUserEmail
+    ) {
 
-    public List<RestaurantListDTO> search(RestaurantSearchRequest request) {
-        return restaurantRepository.searchByCategories(request.getCategories())
-                .stream()
-                .map(RestaurantListDTO::from)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Restaurant> result = restaurantRepository.search(
+                request.getCategories(),
+                request.getKeyword(),
+                pageable
+        );
+
+        return result.map(restaurant -> {
+
+            long likeCount =
+                    likeRepository.countByRestaurant_Id(restaurant.getId());
+
+            boolean liked = false;
+
+            if (currentUserEmail != null) {
+                User user = userRepository
+                        .findByEmail(currentUserEmail)
+                        .orElse(null);
+
+                if (user != null) {
+                    liked = likeRepository
+                            .existsByUser_IdAndRestaurant_Id(
+                                    user.getId(),
+                                    restaurant.getId()
+                            );
+                }
+            }
+
+            return RestaurantListDTO.from(
+                    restaurant,
+                    likeCount,
+                    liked
+            );
+        });
     }
 
-    public List<RestaurantMapDTO> searchForMap(RestaurantSearchRequest request) {
-        return restaurantRepository.searchByCategories(request.getCategories())
+    /* =====================================================
+       🔥 지도 조회
+    ===================================================== */
+    public List<RestaurantMapDTO> searchForMap(
+            RestaurantSearchRequest request
+    ) {
+
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
+
+        Page<Restaurant> result = restaurantRepository.search(
+                request.getCategories(),
+                request.getKeyword(),
+                pageable
+        );
+
+        return result.getContent()
                 .stream()
                 .map(RestaurantMapDTO::from)
                 .toList();
     }
 
-    /* =========================
-        Python 수집 기능 (최종본)
-       ========================= */
+    /* =====================================================
+       🔥 상세 조회
+    ===================================================== */
+    @Transactional(readOnly = true)
+    public RestaurantDetailDTO getDetail(Long id, String currentUserEmail) {
 
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("해당 맛집이 존재하지 않습니다. id=" + id)
+                );
+
+        Double avg = reviewRepository.findAverageRating(id);
+        double averageRating = avg == null
+                ? 0.0
+                : Math.round(avg * 10) / 10.0;
+
+        List<ReviewResponse> reviews =
+                reviewRepository.findByRestaurant_Id(id)
+                        .stream()
+                        .map(review ->
+                                ReviewResponse.from(review, currentUserEmail)
+                        )
+                        .toList();
+
+        int reviewCount = reviews.size();
+
+        long likeCount = likeRepository.countByRestaurant_Id(id);
+
+        boolean liked = false;
+
+        if (currentUserEmail != null) {
+            User user = userRepository
+                    .findByEmail(currentUserEmail)
+                    .orElse(null);
+
+            if (user != null) {
+                liked = likeRepository
+                        .existsByUser_IdAndRestaurant_Id(
+                                user.getId(),
+                                id
+                        );
+            }
+        }
+
+        return RestaurantDetailDTO.from(
+                restaurant,
+                averageRating,
+                reviewCount,
+                reviews,
+                likeCount,
+                liked
+        );
+    }
+
+    /* =====================================================
+       🔥 Python 수집 기능 (복구 완료)
+    ===================================================== */
     @Transactional
     public void collectFromPython() {
 
         String url = "http://127.0.0.1:8000/collect";
 
-        /* 1️⃣ Python 응답을 String(JSON)으로 받기 */
         String rawJson = restTemplate.postForObject(url, null, String.class);
 
         if (rawJson == null || rawJson.isBlank()) {
             throw new RuntimeException("Python 수집 결과(JSON)가 비어있습니다.");
         }
 
-        /* 2️⃣ ObjectMapper에 snake_case 명시 */
         ObjectMapper mapper = new ObjectMapper();
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
         PythonCollectResponse response;
         try {
-            /* 3️⃣ JSON → DTO 직접 파싱 (핵심) */
             response = mapper.readValue(rawJson, PythonCollectResponse.class);
         } catch (Exception e) {
             throw new RuntimeException("Python 응답 파싱 실패", e);
@@ -73,18 +185,12 @@ public class RestaurantService {
             throw new RuntimeException("Python 수집 데이터가 없습니다.");
         }
 
-        /* 4️⃣ DB 저장 */
         for (PythonRestaurantDto dto : response.getData()) {
 
-            /* 디버그 로그 (한 번 확인 후 지워도 됨) */
-            System.out.println("IMAGE CHECK = " + dto.getImageUrl());
-
-            /* 4-1️⃣ 중복 방지 */
             if (restaurantRepository.existsByExternalId(dto.getExternalId())) {
                 continue;
             }
 
-            /* 4-2️⃣ Restaurant 생성 */
             Restaurant restaurant = Restaurant.fromPython(
                     dto.getExternalId(),
                     dto.getName(),
@@ -94,13 +200,10 @@ public class RestaurantService {
                     dto.getSource()
             );
 
-            /* 🔥 이미지 URL 저장 (문제 해결 핵심) */
             restaurant.setImageUrl(dto.getImageUrl());
-
-            /* 기타 필드 */
             restaurant.setPhone(dto.getPhone());
+            restaurant.setDescription(dto.getDescription());
 
-            /* 4-3️⃣ 카테고리 매핑 */
             if (dto.getCategory() != null && !dto.getCategory().isBlank()) {
 
                 String[] categoryNames = dto.getCategory().split(">");
@@ -112,7 +215,9 @@ public class RestaurantService {
                             .findByName(name)
                             .orElseGet(() ->
                                     categoryRepository.save(
-                                            Category.builder().name(name).build()
+                                            Category.builder()
+                                                    .name(name)
+                                                    .build()
                                     )
                             );
 
@@ -120,7 +225,6 @@ public class RestaurantService {
                 }
             }
 
-            /* 4-4️⃣ 저장 */
             restaurantRepository.save(restaurant);
         }
     }
