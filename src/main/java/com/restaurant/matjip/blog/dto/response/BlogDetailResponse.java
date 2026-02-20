@@ -24,28 +24,28 @@ public class BlogDetailResponse {
     private Long authorId;
     private String authorNickname;
 
-    private BlogType boardType;
+    private BlogType blogType;
     private String imageUrl;
     private int commentCount;
 
-    public BlogDetailResponse(Blog board, boolean recommended, int commentCount) {
-        this.id = board.getId();
-        this.title = board.getTitle();
-        this.content = board.getContent();
-        this.contentHtml = board.getContentHtml();
-        this.contentDelta = board.getContentDelta();
+    public BlogDetailResponse(Blog blog, boolean recommended, int commentCount) {
+        this.id = blog.getId();
+        this.title = blog.getTitle();
+        this.content = blog.getContent();
+        this.contentHtml = blog.getContentHtml();
+        this.contentDelta = blog.getContentDelta();
 
-        this.viewCount = board.getViewCount();
-        this.recommendCount = board.getRecommendCount();
+        this.viewCount = blog.getViewCount();
+        this.recommendCount = blog.getRecommendCount();
         this.recommended = recommended;
 
-        this.createdAt = board.getCreatedAt();
+        this.createdAt = blog.getCreatedAt();
 
-        this.authorId = board.getUser().getId();
-        this.authorNickname = board.getUser().getNickname();
+        this.authorId = blog.getUser().getId();
+        this.authorNickname = blog.getUser().getNickname();
 
-        this.boardType = board.getBoardType();
-        this.imageUrl = board.getImageUrl();
+        this.blogType = blog.getBlogType();
+        this.imageUrl = blog.getImageUrl();
         this.commentCount = commentCount;
     }
 }

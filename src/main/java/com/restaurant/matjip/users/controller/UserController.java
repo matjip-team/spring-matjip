@@ -96,6 +96,7 @@ public class UserController {
                 .id(userDetails.getId())
                 .name(userDetails.getName())
                 .nickname(userDetails.getNickname())
+                .profileImageUrl(userDetails.getProfileImageUrl())
                 .role(role)
                 .build());
     }

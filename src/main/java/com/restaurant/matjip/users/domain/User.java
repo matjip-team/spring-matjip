@@ -47,4 +47,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private UserStatus status;
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+    private UserProfile profile;
+
 }

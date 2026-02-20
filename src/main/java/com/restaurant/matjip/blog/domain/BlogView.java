@@ -31,7 +31,7 @@ public class BlogView {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id")
-    private Blog board;
+    private Blog blog;
 
     /* ================== 사용자 ================== */
 

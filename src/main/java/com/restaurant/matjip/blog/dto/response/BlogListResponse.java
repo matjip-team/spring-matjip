@@ -18,7 +18,7 @@ public class BlogListResponse {
             Pattern.compile("<(video|iframe)[\\s>]", Pattern.CASE_INSENSITIVE);
 
     private Long id;
-    private BlogType boardType;
+    private BlogType blogType;
     private String title;
     private String authorNickname;
     private int viewCount;
@@ -29,32 +29,32 @@ public class BlogListResponse {
     private boolean hasImage;
     private boolean hasVideo;
 
-    public static BlogListResponse from(Blog board, int commentCount) {
-        String content = board.getContent() == null ? "" : board.getContent();
-        boolean hasImage = hasImage(board, content);
+    public static BlogListResponse from(Blog blog, int commentCount) {
+        String content = blog.getContent() == null ? "" : blog.getContent();
+        boolean hasImage = hasImage(blog, content);
         boolean hasVideo = hasVideo(content);
 
         return new BlogListResponse(
-                board.getId(),
-                board.getBoardType(),
-                board.getTitle(),
-                board.getUser().getNickname(),
-                board.getViewCount(),
-                board.getRecommendCount(),
-                board.getCreatedAt(),
+                blog.getId(),
+                blog.getBlogType(),
+                blog.getTitle(),
+                blog.getUser().getNickname(),
+                blog.getViewCount(),
+                blog.getRecommendCount(),
+                blog.getCreatedAt(),
                 commentCount,
-                board.getImageUrl(),
+                blog.getImageUrl(),
                 hasImage,
                 hasVideo
         );
     }
 
-    private static boolean hasImage(Blog board, String content) {
-        return hasImageUrl(board) || IMAGE_TAG_PATTERN.matcher(content).find();
+    private static boolean hasImage(Blog blog, String content) {
+        return hasImageUrl(blog) || IMAGE_TAG_PATTERN.matcher(content).find();
     }
 
-    private static boolean hasImageUrl(Blog board) {
-        String imageUrl = board.getImageUrl();
+    private static boolean hasImageUrl(Blog blog) {
+        String imageUrl = blog.getImageUrl();
         return imageUrl != null && !imageUrl.isBlank();
     }
 

@@ -20,7 +20,7 @@ public class BlogCreateRequest {
     private String contentDelta;
 
     @NotNull(message = "Blog type is required.")
-    private BlogType boardType;
+    private BlogType blogType;
 
     private String imageUrl;
 }

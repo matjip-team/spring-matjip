@@ -60,6 +60,7 @@ public class AuthController {
                             .email(user.getEmail())
                             .name(user.getName())
                             .nickname(user.getNickname())
+                            .profileImageUrl(user.getProfileImageUrl())
                             .roles(roles)
                             .build()
             );

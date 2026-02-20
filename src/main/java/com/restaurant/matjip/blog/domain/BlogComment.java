@@ -27,7 +27,7 @@ public class BlogComment extends BaseEntity {
     /* 어떤 게시글의 댓글인지 */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blog_id", nullable = false)
-    private Blog board;
+    private Blog blog;
 
     /* 작성자 */
     @ManyToOne(fetch = FetchType.LAZY)

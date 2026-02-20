@@ -19,6 +19,7 @@ public class CustomUserDetails implements UserDetails {
     private String name;
     private String nickname;
     private long id;
+    private String profileImageUrl;
     private Collection<? extends GrantedAuthority> authorities;
 
     @Override
