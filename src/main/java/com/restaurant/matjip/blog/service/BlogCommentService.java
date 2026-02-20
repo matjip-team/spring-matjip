@@ -6,6 +6,8 @@ import com.restaurant.matjip.blog.dto.request.BlogCommentCreateRequest;
 import com.restaurant.matjip.blog.dto.response.BlogCommentResponse;
 import com.restaurant.matjip.blog.repository.BlogRepository;
 import com.restaurant.matjip.blog.repository.BlogCommentRepository;
+import com.restaurant.matjip.global.exception.BusinessException;
+import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -76,11 +78,12 @@ public class BlogCommentService {
     /* 댓글 수정 */
     @Transactional
     public void update(Long commentId, Long userId, String content) {
-        BlogComment c = commentRepository.findById(commentId).orElseThrow();
+        BlogComment c = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED_ERROR));
 
-        if (!c.getUser().getId().equals(userId)) {
-            throw new RuntimeException("권한 없음");
-        }
+//        if (!c.getUser().getId().equals(userId)) {
+//            new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
+//        }
 
         if (content == null || content.trim().isEmpty()) {
             throw new RuntimeException("내용 없음");
