@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -45,9 +47,32 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Comment("사용자 상태")
     @Column(nullable = false)
-    private UserStatus status;
+    private UserStatus status = UserStatus.ACTIVE;
+
+    @Comment("삭제일")
+    @Column(nullable = true)
+    private LocalDateTime deletedAt;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
-    private UserProfile profile;
+    private UserProfile userProfile;
+
+    // 연관관계 편의 메서드
+    public void setUserProfile(UserProfile profile) {
+        this.userProfile = profile;
+        profile.setUser(this);
+    }
+
+    public void update(String name, String nickname) {
+        this.name = name;
+        this.nickname = nickname;
+    }
+
+    public void changeStatus(UserStatus status) {
+        this.status = status;
+    }
+
+    public void withdraw() {
+        this.status = UserStatus.DELETED;
+    }
 
 }

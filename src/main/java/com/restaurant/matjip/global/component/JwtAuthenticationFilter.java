@@ -2,6 +2,7 @@ package com.restaurant.matjip.global.component;
 
 import com.restaurant.matjip.auth.service.CustomUserDetailService;
 import com.restaurant.matjip.global.common.CustomUserDetails;
+import com.restaurant.matjip.users.constant.UserStatus;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -51,6 +52,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             CustomUserDetails userDetails = (CustomUserDetails) customUserDetailService.loadUserByUsername(username);
 
+            // 🔥 탈퇴 회원 차단
+            if (UserStatus.DELETED.equals(userDetails.getUserStatus())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (UserStatus.BLOCKED.equals(userDetails.getUserStatus())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             /*
               Spring Security 인증 객체
               첫 번째 파라미터: 사용자 정보

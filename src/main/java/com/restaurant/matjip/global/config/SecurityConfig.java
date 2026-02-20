@@ -71,11 +71,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth
                                 // 1. 관리자 먼저 (구체적인 것부터)
-                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 // 2. 보호할 auth 경로
                                 .requestMatchers(
-                                        "/register/**",
-                                    "/auth/mypage/**"
+                                        "/api/register/**",
+                                    "/api/auth/mypage/**"
                                 ).authenticated()
                                 // 3. 공개 경로
                                 .requestMatchers(

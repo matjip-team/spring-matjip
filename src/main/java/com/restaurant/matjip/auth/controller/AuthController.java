@@ -7,6 +7,7 @@ import com.restaurant.matjip.global.common.CustomUserDetails;
 import com.restaurant.matjip.global.component.JwtUtil;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
+import com.restaurant.matjip.users.constant.UserStatus;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -44,6 +45,10 @@ public class AuthController {
 
             CustomUserDetails user = (CustomUserDetails) auth.getPrincipal();
 
+            if (user.getUserStatus() == UserStatus.DELETED) {
+                throw new BusinessException(ErrorCode.USER_DELETED);
+            }
+
             String accessToken = jwtUtil.generateAccessToken(user.getEmail(), user.getId());
             String refreshToken = jwtUtil.generateRefreshToken(user.getEmail(), user.getId());
 
@@ -66,9 +71,12 @@ public class AuthController {
             );
 
         } catch (AuthenticationException e) { // BadCredentials, Disabled 등 모두 상속
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            if ("USER_DELETED".equals(e.getMessage())) {
+                throw new BusinessException(ErrorCode.USER_DELETED);
+            } else {
+                throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            }
         }
-
     }
 
     //AccessToken 재발급 API

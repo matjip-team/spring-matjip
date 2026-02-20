@@ -17,6 +17,8 @@ public enum ErrorCode {
     // User
     USER_NOT_FOUND("error.user.not-found", HttpStatus.NOT_FOUND),
     DUPLICATE_EMAIL("error.user.duplicate-email", HttpStatus.CONFLICT),
+    USER_DELETED("error.user.deleted", HttpStatus.NOT_FOUND),
+    INVALID_PASSWORD("error.user.invalid-password", HttpStatus.UNAUTHORIZED),
 
     // Common
     INTERNAL_ERROR("error.common.internal", HttpStatus.INTERNAL_SERVER_ERROR),

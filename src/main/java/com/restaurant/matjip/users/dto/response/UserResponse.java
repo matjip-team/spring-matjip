@@ -27,7 +27,7 @@ public class UserResponse {
                 user.getName(),
                 user.getNickname(),
                 user.getRole().name(),
-                user.getProfile().getProfileImageUrl(),
+                user.getUserProfile().getProfileImageUrl(),
                 user.getStatus().name()
         );
     }

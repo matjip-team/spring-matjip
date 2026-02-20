@@ -1,8 +1,11 @@
 package com.restaurant.matjip.users.service;
 
+import com.restaurant.matjip.global.exception.BusinessException;
+import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.users.constant.UserRole;
 import com.restaurant.matjip.users.constant.UserStatus;
 import com.restaurant.matjip.users.domain.User;
+import com.restaurant.matjip.users.domain.UserProfile;
 import com.restaurant.matjip.users.dto.request.UserCreateRequest;
 import com.restaurant.matjip.users.dto.response.UserResponse;
 import com.restaurant.matjip.users.repository.UserRepository;
@@ -11,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.restaurant.matjip.global.exception.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +43,14 @@ public class UserService {
                 .role(UserRole.USER)
                 .status(UserStatus.ACTIVE)
                 .build();
+
+        UserProfile profile = UserProfile.builder()
+                .nickname(request.getNickname())
+                .bio("")
+                .build();
+
+        user.setUserProfile(profile);
+
         return UserResponse.from(userRepository.save(user));
     }
 
