@@ -44,7 +44,7 @@ public class MyPageService {
     @Transactional(readOnly = true)
     public LikePageResponse getLikes(long userId, Long cursorId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        List<LikeResponse> like = restaurantLikeRepository.findNextLike(cursorId);
+        List<LikeResponse> like = restaurantLikeRepository.findNextLike(userId, cursorId);
 
         Map<Long, LikeResponse> grouped = new LinkedHashMap<>();
 
@@ -78,7 +78,7 @@ public class MyPageService {
     @Transactional(readOnly = true)
     public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        List<ReviewResponse> review = reviewRepository.findNextReview(cursorId);
+        List<ReviewResponse> review = reviewRepository.findNextReview(userId, cursorId);
 
         Map<Long, ReviewResponse> grouped = new LinkedHashMap<>();
 
