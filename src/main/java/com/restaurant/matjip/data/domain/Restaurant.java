@@ -88,6 +88,7 @@ public class Restaurant extends BaseEntity {
             String address,
             double lat,
             double lng,
+            String phone,
             String source
     ) {
         Restaurant r = new Restaurant();
@@ -96,6 +97,7 @@ public class Restaurant extends BaseEntity {
         r.address = address;
         r.latitude = BigDecimal.valueOf(lat);
         r.longitude = BigDecimal.valueOf(lng);
+        r.phone = phone;
         r.source = source;
         r.approvalStatus = RestaurantApprovalStatus.APPROVED;
         return r;
