@@ -20,6 +20,7 @@ public class RestaurantAdminDetailDTO {
     private String address;
     private String phone;
     private String description;
+    private String imageUrl;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private List<String> categoryNames;
@@ -32,12 +33,17 @@ public class RestaurantAdminDetailDTO {
     private String registeredByNickname;
 
     public static RestaurantAdminDetailDTO from(Restaurant restaurant) {
+        return from(restaurant, restaurant.getImageUrl());
+    }
+
+    public static RestaurantAdminDetailDTO from(Restaurant restaurant, String imageUrl) {
         return RestaurantAdminDetailDTO.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .phone(restaurant.getPhone())
                 .description(restaurant.getDescription())
+                .imageUrl(imageUrl)
                 .latitude(restaurant.getLatitude())
                 .longitude(restaurant.getLongitude())
                 .categoryNames(
