@@ -1,5 +1,6 @@
 package com.restaurant.matjip.global.common;
 
+import com.restaurant.matjip.users.constant.UserStatus;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,7 @@ public class CustomUserDetails implements UserDetails {
     private String nickname;
     private long id;
     private String profileImageUrl;
+    private UserStatus userStatus;
     private Collection<? extends GrantedAuthority> authorities;
 
     @Override

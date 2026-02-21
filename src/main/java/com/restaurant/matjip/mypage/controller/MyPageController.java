@@ -3,6 +3,7 @@ package com.restaurant.matjip.mypage.controller;
 import com.restaurant.matjip.global.common.ApiResponse;
 import com.restaurant.matjip.global.common.CustomUserDetails;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
+import com.restaurant.matjip.mypage.dto.request.WithdrawRequest;
 import com.restaurant.matjip.mypage.dto.response.LikePageResponse;
 import com.restaurant.matjip.mypage.dto.response.ReviewPageResponse;
 import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
@@ -54,6 +56,15 @@ public class MyPageController {
 
         myPageService.deleteLikes(likeId, customUserDetails.getId());
 
+        return ApiResponse.success(null);
+    }
+
+    @PostMapping("/withdraw")
+    public ApiResponse<Void> withdraw(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody WithdrawRequest request) {
+        String email = userDetails.getUsername();
+        myPageService.withdraw(email, request.getPassword());
         return ApiResponse.success(null);
     }
 

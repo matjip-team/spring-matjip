@@ -69,10 +69,20 @@ public class SecurityConfig {
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(
-                                "/**"
-                                ).permitAll() //인증 없이 접근 허용
-                            .anyRequest().authenticated() //그 외 모든 요청 → 인증 필요
+                        auth
+                                // 1. 관리자 먼저 (구체적인 것부터)
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                // 2. 보호할 auth 경로
+                                .requestMatchers(
+                                        "/api/register/**",
+                                    "/api/auth/mypage/**"
+                                ).authenticated()
+                                // 3. 공개 경로
+                                .requestMatchers(
+                                        "/**"
+                                ).permitAll()
+                                // 4. 나머지는 로그인 필요
+                                .anyRequest().authenticated()
                 )
                 //Spring Security의 기본 UsernamePasswordAuthenticationFilter 전에 jwtFilter를 실행
                 //즉, 요청이 들어오면 JWT 확인 후 SecurityContext에 인증 정보를 세팅하고 이후 필터 진행
@@ -99,7 +109,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of("http://localhost:5173")); // 리액트 주소
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")); // 허용할 메소드 목록
-        // 클라이언트가 서버에 요청시 모든 요청 정보를 허용하겠습니다.
+        // 클라이언트가 서버에 요청시 모든 요청 정보를 허용하겠습니다.(JWT 쓰면 이설정 필수)
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true); // 쿠키, 세션 인증 정보 허용
 

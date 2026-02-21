@@ -84,7 +84,6 @@ public class UserController {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        //todo : 권한관련하여 작업해야함.
         String role = "ROLE_USER";
         if (!userDetails.getAuthorities().isEmpty()) {
             GrantedAuthority firstAuthority = userDetails.getAuthorities().iterator().next();

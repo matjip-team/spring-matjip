@@ -34,5 +34,11 @@ public class UserProfile extends BaseEntity {
     @Comment("자기소개")
     @Column(columnDefinition = "TEXT")
     private String bio;
+
+    public void update(String nickname, String profileImageUrl, String bio) {
+        this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
+        this.bio = bio;
+    }
 }
 
