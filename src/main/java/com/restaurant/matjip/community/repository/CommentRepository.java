@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    // 부모 댓글만 조회
     @Query("""
 select distinct c
 from Comment c
@@ -20,10 +20,8 @@ order by c.id asc
 """)
     List<Comment> findRootComments(@Param("boardId") Long boardId);
 
-    // 특정 부모의 자식 댓글만 조회
     List<Comment> findByParentId(Long parentId);
 
-    // 댓글목록 오래된순 정렬
     @Query("""
 select distinct c
 from Comment c
@@ -34,7 +32,6 @@ order by c.id asc
 """)
     List<Comment> findRootCommentsCreated(@Param("boardId") Long boardId);
 
-    // 댓글목록 최신순 정렬
     @Query("""
 select distinct c
 from Comment c
@@ -47,4 +44,5 @@ order by c.id desc
 
     int countByBoardIdAndDeletedFalse(Long boardId);
 
+    Optional<Comment> findByIdAndBoardId(Long id, Long boardId);
 }

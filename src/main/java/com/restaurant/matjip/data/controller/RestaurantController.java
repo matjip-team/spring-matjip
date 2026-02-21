@@ -109,6 +109,32 @@ public class RestaurantController {
         return ApiResponse.success(restaurantService.getMyRequests(userDetails.getId()));
     }
 
+    @GetMapping("/requests/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<RestaurantMyRequestDetailDTO> getMyRequestDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+
+        return ApiResponse.success(restaurantService.getMyRequestDetail(id, userDetails.getId()));
+    }
+
+    @GetMapping("/requests/{id}/license-view-url")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<String> getMyRequestLicenseViewUrl(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+
+        return ApiResponse.success(restaurantService.getMyRequestLicenseViewUrl(id, userDetails.getId()));
+    }
+
     @PatchMapping("/requests/{id}/cancel")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Void> cancelMyRequest(

@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -190,7 +191,12 @@ public class RestaurantService {
 
 
     @Transactional
-    public void updateApprovalStatus(Long restaurantId, RestaurantApprovalStatus status, Long adminUserId) {
+    public void updateApprovalStatus(
+            Long restaurantId,
+            RestaurantApprovalStatus status,
+            String rejectedReason,
+            Long adminUserId
+    ) {
         assertAdmin(adminUserId);
 
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
@@ -201,6 +207,14 @@ public class RestaurantService {
         }
 
         restaurant.setApprovalStatus(status);
+        if (status == RestaurantApprovalStatus.REJECTED) {
+            if (!StringUtils.hasText(rejectedReason)) {
+                throw new IllegalArgumentException("Rejected reason is required when status is REJECTED");
+            }
+            restaurant.setRejectedReason(rejectedReason.trim());
+        } else {
+            restaurant.setRejectedReason(null);
+        }
         restaurantLicenseFileService.deleteObject(restaurant.getBusinessLicenseFileUrl());
         restaurant.setBusinessLicenseFileUrl(null);
     }
@@ -227,10 +241,20 @@ public class RestaurantService {
     ) {
         assertAdmin(adminUserId);
 
-        return restaurantRepository.findAllByApprovalStatusOrderByCreatedAtDesc(status)
+        return restaurantRepository.findAllByApprovalStatusAndSourceOrderByCreatedAtDesc(status, "USER")
                 .stream()
                 .map(RestaurantAdminListDTO::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RestaurantAdminDetailDTO getRequestDetailForAdmin(Long restaurantId, Long adminUserId) {
+        assertAdmin(adminUserId);
+
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        return RestaurantAdminDetailDTO.from(restaurant);
     }
 
     @Transactional(readOnly = true)
@@ -239,6 +263,27 @@ public class RestaurantService {
                 .stream()
                 .map(RestaurantMyRequestDTO::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RestaurantMyRequestDetailDTO getMyRequestDetail(Long requestId, Long userId) {
+        Restaurant restaurant = restaurantRepository.findByIdAndRegisteredById(requestId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        return RestaurantMyRequestDetailDTO.from(restaurant);
+    }
+
+    @Transactional(readOnly = true)
+    public String getMyRequestLicenseViewUrl(Long requestId, Long userId) {
+        Restaurant restaurant = restaurantRepository.findByIdAndRegisteredById(requestId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        String fileKey = restaurant.getBusinessLicenseFileUrl();
+        if (fileKey == null || fileKey.isBlank()) {
+            throw new IllegalArgumentException("No business license file found");
+        }
+
+        return restaurantLicenseFileService.createPresignedViewUrl(fileKey);
     }
 
     @Transactional
@@ -250,9 +295,12 @@ public class RestaurantService {
             throw new BusinessException(ErrorCode.RESTAURANT_REQUEST_NOT_PENDING);
         }
 
-        restaurant.setApprovalStatus(RestaurantApprovalStatus.CANCELLED);
-        restaurantLicenseFileService.deleteObject(restaurant.getBusinessLicenseFileUrl());
-        restaurant.setBusinessLicenseFileUrl(null);
+        String fileKey = restaurant.getBusinessLicenseFileUrl();
+        if (fileKey != null && !fileKey.isBlank()) {
+            restaurantLicenseFileService.deleteObject(fileKey);
+        }
+
+        restaurantRepository.delete(restaurant);
     }
 
 

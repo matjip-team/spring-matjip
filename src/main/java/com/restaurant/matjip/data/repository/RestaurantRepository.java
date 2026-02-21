@@ -39,6 +39,10 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     List<Restaurant> searchByCategories(List<String> categories);
 
     List<Restaurant> findAllByApprovalStatusOrderByCreatedAtDesc(RestaurantApprovalStatus approvalStatus);
+    List<Restaurant> findAllByApprovalStatusAndSourceOrderByCreatedAtDesc(
+            RestaurantApprovalStatus approvalStatus,
+            String source
+    );
 
     List<Restaurant> findAllByRegisteredByIdOrderByCreatedAtDesc(Long registeredById);
 

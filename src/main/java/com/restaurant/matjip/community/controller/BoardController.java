@@ -1,14 +1,16 @@
 package com.restaurant.matjip.community.controller;
 
+import com.restaurant.matjip.community.controller.enums.BoardSearchType;
 import com.restaurant.matjip.community.domain.BoardType;
 import com.restaurant.matjip.community.dto.request.BoardCreateRequest;
-import com.restaurant.matjip.community.controller.enums.BoardSearchType;
 import com.restaurant.matjip.community.dto.request.BoardUpdateRequest;
+import com.restaurant.matjip.community.dto.request.ReportCreateRequest;
 import com.restaurant.matjip.community.dto.response.BoardDetailResponse;
 import com.restaurant.matjip.community.dto.response.BoardPageResponse;
 import com.restaurant.matjip.community.service.BoardCommandService;
 import com.restaurant.matjip.community.service.BoardQueryService;
 import com.restaurant.matjip.community.service.BoardRecommendationService;
+import com.restaurant.matjip.community.service.BoardReportService;
 import com.restaurant.matjip.global.common.ApiResponse;
 import com.restaurant.matjip.global.common.CustomUserDetails;
 import com.restaurant.matjip.global.exception.BusinessException;
@@ -27,21 +29,7 @@ public class BoardController {
     private final BoardQueryService boardQueryService;
     private final BoardRecommendationService boardRecommendationService;
     private final BoardCommandService boardCommandService;
-
-    /* ===================== 게시글 목록 ===================== */
-
-//    @GetMapping
-//    public ApiResponse<BoardPageResponse> getBoards(
-//            @RequestParam(required = false) BoardType type,
-//            @RequestParam(required = false) String keyword,
-//            Pageable pageable
-//    ) {
-//        return ApiResponse.success(
-//                boardQueryService.getBoards(type, keyword, pageable)
-//        );
-//    }
-
-    /* ===================== 게시글 검색 ===================== */
+    private final BoardReportService boardReportService;
 
     @GetMapping
     public ApiResponse<BoardPageResponse> getBoards(
@@ -53,14 +41,11 @@ public class BoardController {
         return ApiResponse.success(boardQueryService.getBoards(type, keyword, searchType, pageable));
     }
 
-    /* ===================== 게시글 작성 ===================== */
-
     @PostMapping
     public ApiResponse<Long> createBoard(
             @Valid @RequestBody BoardCreateRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-
         if (userDetails == null) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
         }
@@ -69,7 +54,6 @@ public class BoardController {
         return ApiResponse.success(boardId);
     }
 
-    /* ===================== 게시글 수정 ===================== */
     @PutMapping("/{id}")
     public ApiResponse<Void> updateBoard(
             @PathVariable Long id,
@@ -79,8 +63,6 @@ public class BoardController {
         boardCommandService.update(id, user.getId(), req);
         return ApiResponse.success(null);
     }
-
-    /* ===================== 게시글 삭제 ===================== */
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteBoard(
@@ -95,8 +77,6 @@ public class BoardController {
         return ApiResponse.success(null);
     }
 
-    /* ===================== 추천 ===================== */
-
     @PostMapping("/{id}/recommendations")
     public ApiResponse<Void> recommend(
             @PathVariable Long id,
@@ -110,15 +90,25 @@ public class BoardController {
         return ApiResponse.success(null);
     }
 
-    /* ===================== 게시글 상세 ===================== */
+    @PostMapping("/{id}/reports")
+    public ApiResponse<Void> reportBoard(
+            @PathVariable Long id,
+            @Valid @RequestBody ReportCreateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+
+        boardReportService.reportBoard(id, userDetails.getId(), request);
+        return ApiResponse.success("신고가 접수되었습니다.", null);
+    }
 
     @GetMapping("/{id}")
     public ApiResponse<BoardDetailResponse> getBoardDetail(
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ApiResponse.success(
-                boardQueryService.getDetail(id, userDetails)
-        );
+        return ApiResponse.success(boardQueryService.getDetail(id, userDetails));
     }
 }

@@ -25,6 +25,11 @@ public enum ErrorCode {
 
     // Board
     BOARD_NOT_FOUND("error.baord.not-found", HttpStatus.NOT_FOUND),
+    DUPLICATE_REPORT("error.board.duplicate-report", HttpStatus.CONFLICT),
+    COMMENT_NOT_FOUND("error.comment.not-found", HttpStatus.NOT_FOUND),
+    REPORT_NOT_FOUND("error.report.not-found", HttpStatus.NOT_FOUND),
+    REPORT_ALREADY_PROCESSED("error.report.already-processed", HttpStatus.BAD_REQUEST),
+    INVALID_REPORT_ACTION("error.report.invalid-action", HttpStatus.BAD_REQUEST),
 
     // Restaurant
     RESTAURANT_NOT_FOUND("error.restaurant.not-found", HttpStatus.NOT_FOUND),

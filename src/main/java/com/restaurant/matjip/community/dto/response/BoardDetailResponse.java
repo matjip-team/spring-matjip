@@ -27,6 +27,8 @@ public class BoardDetailResponse {
     private BoardType boardType;
     private String imageUrl;
     private int commentCount;
+    private boolean hidden;
+    private int reportCount;
 
     public BoardDetailResponse(Board board, boolean recommended, int commentCount) {
         this.id = board.getId();
@@ -47,5 +49,7 @@ public class BoardDetailResponse {
         this.boardType = board.getBoardType();
         this.imageUrl = board.getImageUrl();
         this.commentCount = commentCount;
+        this.hidden = board.isHidden();
+        this.reportCount = board.getReportCount();
     }
 }

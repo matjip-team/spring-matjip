@@ -63,6 +63,10 @@ public class Restaurant extends BaseEntity {
     @Column(length = 500)
     private String businessLicenseFileUrl;
 
+    @Comment("Rejected reason")
+    @Column(columnDefinition = "TEXT")
+    private String rejectedReason;
+
     @Enumerated(EnumType.STRING)
     @Comment("Approval status")
     @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'APPROVED'")

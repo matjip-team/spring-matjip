@@ -1,6 +1,7 @@
 package com.restaurant.matjip.data.controller;
 
 import com.restaurant.matjip.data.domain.RestaurantApprovalStatus;
+import com.restaurant.matjip.data.dto.RestaurantAdminDetailDTO;
 import com.restaurant.matjip.data.dto.RestaurantAdminListDTO;
 import com.restaurant.matjip.data.dto.RestaurantApprovalUpdateRequest;
 import com.restaurant.matjip.data.service.RestaurantService;
@@ -42,6 +43,18 @@ public class AdminRestaurantController {
         );
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse<RestaurantAdminDetailDTO> getRequestDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+
+        return ApiResponse.success(restaurantService.getRequestDetailForAdmin(id, userDetails.getId()));
+    }
+
     @GetMapping("/{id}/license-view-url")
     public ApiResponse<String> getLicenseViewUrl(
             @PathVariable Long id,
@@ -64,7 +77,12 @@ public class AdminRestaurantController {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
         }
 
-        restaurantService.updateApprovalStatus(id, request.getStatus(), userDetails.getId());
+        restaurantService.updateApprovalStatus(
+                id,
+                request.getStatus(),
+                request.getRejectedReason(),
+                userDetails.getId()
+        );
         return ApiResponse.success(null);
     }
 }

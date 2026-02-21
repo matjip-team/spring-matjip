@@ -12,12 +12,9 @@ import java.util.List;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
-    /* ================== 공지 목록 (상단 고정용) ================== */
-
     List<Board> findByBoardTypeOrderByIdDesc(BoardType boardType);
 
-
-    /* ================== 일반 게시글 검색 + 필터 + 페이징 ================== */
+    List<Board> findByBoardTypeAndHiddenFalseOrderByIdDesc(BoardType boardType);
 
     @Query("""
         SELECT b FROM Board b
@@ -37,8 +34,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
             Pageable pageable
     );
 
-    /* ================== 제목 검색 ================== */
-
     @Query("""
 select b from Board b
 where b.boardType <> 'NOTICE'
@@ -51,9 +46,6 @@ order by b.id desc
             String keyword,
             Pageable pageable
     );
-
-
-    /* ================== 내용 검색 ================== */
 
     @Query("""
 select b from Board b
@@ -68,9 +60,6 @@ order by b.id desc
             Pageable pageable
     );
 
-
-    /* ================== 글쓴이 검색 ================== */
-
     @Query("""
 select b from Board b
 join b.user u
@@ -84,9 +73,6 @@ order by b.id desc
             String keyword,
             Pageable pageable
     );
-
-
-    /* ================== 댓글 검색 ================== */
 
     @Query("""
 select distinct b from Board b
