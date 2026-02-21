@@ -20,6 +20,7 @@ public class RestaurantMyRequestDetailDTO {
     private String address;
     private String phone;
     private String description;
+    private String imageUrl;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private List<String> categoryNames;
@@ -30,12 +31,17 @@ public class RestaurantMyRequestDetailDTO {
     private String rejectedReason;
 
     public static RestaurantMyRequestDetailDTO from(Restaurant restaurant) {
+        return from(restaurant, restaurant.getImageUrl());
+    }
+
+    public static RestaurantMyRequestDetailDTO from(Restaurant restaurant, String imageUrl) {
         return RestaurantMyRequestDetailDTO.builder()
                 .id(restaurant.getId())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
                 .phone(restaurant.getPhone())
                 .description(restaurant.getDescription())
+                .imageUrl(imageUrl)
                 .latitude(restaurant.getLatitude())
                 .longitude(restaurant.getLongitude())
                 .categoryNames(

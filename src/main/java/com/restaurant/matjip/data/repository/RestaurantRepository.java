@@ -20,7 +20,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     @Query("""
     select distinct r from Restaurant r
     left join r.categories c
-    where (:categories is null or c.name in :categories)
+    where r.approvalStatus = com.restaurant.matjip.data.domain.RestaurantApprovalStatus.APPROVED
+      and (:categories is null or c.name in :categories)
       and (:keyword is null or r.name like %:keyword% or r.address like %:keyword%)
 """)
     Page<Restaurant> search(

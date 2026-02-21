@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3ImagePresignService {
 
-    private static final Set<String> ALLOWED_FOLDERS = Set.of("boards", "blogs", "profiles");
+    private static final Set<String> ALLOWED_FOLDERS = Set.of("boards", "blogs", "profiles", "restaurant-images");
 
     private final S3Presigner s3Presigner;
 

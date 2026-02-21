@@ -149,4 +149,19 @@ public class RestaurantController {
         return ApiResponse.success(null);
     }
 
+    @PatchMapping("/requests/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Void> updateMyRequest(
+            @PathVariable Long id,
+            @Valid @RequestBody RestaurantMyRequestUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+
+        restaurantService.updateMyRequest(id, request, userDetails.getId());
+        return ApiResponse.success(null);
+    }
+
 }
