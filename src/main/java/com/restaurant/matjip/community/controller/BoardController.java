@@ -29,20 +29,19 @@ public class BoardController {
     private final BoardCommandService boardCommandService;
 
     /* ===================== 게시글 목록 ===================== */
-
-//    @GetMapping
-//    public ApiResponse<BoardPageResponse> getBoards(
-//            @RequestParam(required = false) BoardType type,
-//            @RequestParam(required = false) String keyword,
-//            Pageable pageable
-//    ) {
-//        return ApiResponse.success(
-//                boardQueryService.getBoards(type, keyword, pageable)
-//        );
-//    }
+//
+    ////    @GetMapping
+    ////    public ApiResponse<BoardPageResponse> getBoards(
+    ////            @RequestParam(required = false) BoardType type,
+    ////            @RequestParam(required = false) String keyword,
+    ////            Pageable pageable
+    ////    ) {
+    ////        return ApiResponse.success(
+    ////                boardQueryService.getBoards(type, keyword, pageable)
+    ////        );
+    ////    }
 
     /* ===================== 게시글 검색 ===================== */
-
     @GetMapping
     public ApiResponse<BoardPageResponse> getBoards(
             @RequestParam(required = false) BoardType type,
