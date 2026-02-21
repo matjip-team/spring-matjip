@@ -3,12 +3,7 @@ package com.restaurant.matjip.mypage.service;
 import com.restaurant.matjip.global.exception.BusinessException;
 import com.restaurant.matjip.global.exception.ErrorCode;
 import com.restaurant.matjip.mypage.dto.request.UserInfoRequest;
-import com.restaurant.matjip.mypage.dto.response.CategroyResponse;
-import com.restaurant.matjip.mypage.dto.response.LikePageResponse;
-import com.restaurant.matjip.mypage.dto.response.LikeResponse;
-import com.restaurant.matjip.mypage.dto.response.ReviewPageResponse;
-import com.restaurant.matjip.mypage.dto.response.ReviewResponse;
-import com.restaurant.matjip.mypage.dto.response.UserInfoResponse;
+import com.restaurant.matjip.mypage.dto.response.*;
 import com.restaurant.matjip.mypage.repository.RestaurantLikeRepository2;
 import com.restaurant.matjip.mypage.repository.ReviewRepository2;
 import com.restaurant.matjip.users.domain.User;
@@ -23,11 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,7 +44,7 @@ public class MyPageService {
     @Transactional(readOnly = true)
     public LikePageResponse getLikes(long userId, Long cursorId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        List<LikeResponse> like = restaurantLikeRepository.findNextLike(cursorId);
+        List<LikeResponse> like = restaurantLikeRepository.findNextLike(userId, cursorId);
 
         Map<Long, LikeResponse> grouped = new LinkedHashMap<>();
 
@@ -87,7 +78,7 @@ public class MyPageService {
     @Transactional(readOnly = true)
     public ReviewPageResponse getUserReviews(Long userId, Long cursorId, int limit) {
         Pageable pageable = PageRequest.of(0, limit);
-        List<ReviewResponse> review = reviewRepository.findNextReview(cursorId);
+        List<ReviewResponse> review = reviewRepository.findNextReview(userId, cursorId);
 
         Map<Long, ReviewResponse> grouped = new LinkedHashMap<>();
 
@@ -141,40 +132,55 @@ public class MyPageService {
         if (profileImageUrl != null && !profileImageUrl.isBlank()) {
             userProfile.setProfileImageUrl(profileImageUrl.trim());
         }
-
-        MultipartFile file = request.getProfileImage();
-        if (file != null && !file.isEmpty()) {
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String fileName = userProfile.getUserId() + "_" + System.currentTimeMillis() + extension;
-
-            File dest = Paths.get(productImageLocation, fileName).toFile();
-            File parentDir = dest.getParentFile();
-            if (!parentDir.exists() && !parentDir.mkdirs()) {
-                throw new RuntimeException();
-            }
-
-            try {
-                file.transferTo(dest);
-            } catch (IOException e) {
-                throw new RuntimeException();
-            }
-
-            if (userProfile.getProfileImageUrl() != null) {
-                File oldFile = Paths.get(productImageLocation, userProfile.getProfileImageUrl()).toFile();
-                if (oldFile.exists() && !oldFile.delete()) {
-                    log.debug("delete failed");
-                }
-            }
-            userProfile.setProfileImageUrl(fileName);
-        }
+//S3로 변경함
+//        MultipartFile file = request.getProfileImage();
+//        if (file != null && !file.isEmpty()) {
+//            String originalFilename = file.getOriginalFilename();
+//            String extension = "";
+//            if (originalFilename != null && originalFilename.contains(".")) {
+//                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+//            }
+//            String fileName = userProfile.getUserId() + "_" + System.currentTimeMillis() + extension;
+//
+//            File dest = Paths.get(productImageLocation, fileName).toFile();
+//            File parentDir = dest.getParentFile();
+//            if (!parentDir.exists() && !parentDir.mkdirs()) {
+//                throw new RuntimeException();
+//            }
+//
+//            try {
+//                file.transferTo(dest);
+//            } catch (IOException e) {
+//                throw new RuntimeException();
+//            }
+//
+//            if (userProfile.getProfileImageUrl() != null) {
+//                File oldFile = Paths.get(productImageLocation, userProfile.getProfileImageUrl()).toFile();
+//                if (oldFile.exists() && !oldFile.delete()) {
+//                    log.debug("delete failed");
+//                }
+//            }
+//            userProfile.setProfileImageUrl(fileName);
+//        }
 
         userProfile.setNickname(request.getNickname());
         userProfile.setBio(request.getBio());
 
         userProfileRepository.save(userProfile);
+    }
+
+    @Transactional
+    public void withdraw(String email, String rawPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if ("DELETED".equals(user.getStatus().name())) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+        user.withdraw();
     }
 }

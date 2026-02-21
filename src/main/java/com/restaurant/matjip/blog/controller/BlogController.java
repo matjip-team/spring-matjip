@@ -28,19 +28,6 @@ public class BlogController {
     private final BlogRecommendationService blogRecommendationService;
     private final BlogCommandService blogCommandService;
 
-    /* ===================== 게시글 목록 ===================== */
-
-//    @GetMapping
-//    public ApiResponse<BlogPageResponse> getBoards(
-//            @RequestParam(required = false) BlogType type,
-//            @RequestParam(required = false) String keyword,
-//            Pageable pageable
-//    ) {
-//        return ApiResponse.success(
-//                blogQueryService.getBlogs(type, keyword, pageable)
-//        );
-//    }
-
     /* ===================== 게시글 검색 ===================== */
 
     @GetMapping

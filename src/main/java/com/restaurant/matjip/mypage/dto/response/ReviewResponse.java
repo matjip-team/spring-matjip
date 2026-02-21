@@ -1,7 +1,6 @@
 package com.restaurant.matjip.mypage.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.restaurant.matjip.data.domain.Review;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -24,6 +23,7 @@ public class ReviewResponse {
     private Long restaurantId;
     private String restaurantName;
     private String address;
+    private String imageUrl;
 
     private double avgRating;
     private long reviewCount;
@@ -36,7 +36,7 @@ public class ReviewResponse {
     @JsonIgnore
     private String categoryName;
 
-    public ReviewResponse(Long id, long rating, String content, LocalDateTime createdAt, LocalDateTime updatedAt, Long restaurantId, String restaurantName, String address, double avgRating, long reviewCount, Long categoryId, String categoryName) {
+    public ReviewResponse(Long id, long rating, String content, LocalDateTime createdAt, LocalDateTime updatedAt, Long restaurantId, String restaurantName, String address, String imageUrl, double avgRating, long reviewCount, Long categoryId, String categoryName) {
         this.id = id;
         this.rating = rating;
         this.content = content;
@@ -45,6 +45,7 @@ public class ReviewResponse {
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
         this.address = address;
+        this.imageUrl = imageUrl;
         this.avgRating = avgRating;
         this.reviewCount = reviewCount;
         this.categoryId = categoryId;

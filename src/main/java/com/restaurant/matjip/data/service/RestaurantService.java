@@ -344,6 +344,7 @@ public class RestaurantService {
                     dto.getAddress(),
                     dto.getLat(),
                     dto.getLng(),
+                    dto.getPhone(),
                     dto.getSource()
             );
 

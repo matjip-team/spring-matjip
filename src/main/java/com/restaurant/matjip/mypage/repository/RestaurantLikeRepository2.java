@@ -19,6 +19,7 @@ public interface RestaurantLikeRepository2 extends JpaRepository<RestaurantLike,
          res.id,
          res.name,
          res.address,
+         res.imageUrl,
          COALESCE(AVG(rv.rating), 0),
          COUNT(rv.id),
          c.id,
@@ -28,12 +29,13 @@ public interface RestaurantLikeRepository2 extends JpaRepository<RestaurantLike,
      JOIN r.restaurant res
      LEFT JOIN res.categories c
      LEFT JOIN Review rv ON rv.restaurant.id = res.id
-     WHERE (:cursorId IS NULL OR r.id > :cursorId)
+     WHERE r.user.id = :userId
+       AND (:cursorId IS NULL OR r.id > :cursorId)
      GROUP BY r.id, r.createdAt, r.updatedAt,
               res.id, res.name, c.id, c.name
      ORDER BY r.id ASC
     """)
-    List<LikeResponse> findNextLike(@Param("cursorId") Long cursorId);
+    List<LikeResponse> findNextLike(@Param("userId") Long userId, @Param("cursorId") Long cursorId);
 
     void deleteByIdAndUserId(long id, Long userId);
 }

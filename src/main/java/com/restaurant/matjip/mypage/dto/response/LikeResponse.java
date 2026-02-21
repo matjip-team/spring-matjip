@@ -22,6 +22,7 @@ public class LikeResponse {
     private Long restaurantId;
     private String restaurantName;
     private String address;
+    private String imageUrl;
 
     private double avgRating;
     private long reviewCount;
@@ -34,13 +35,14 @@ public class LikeResponse {
     @JsonIgnore
     private String categoryName;    
 
-    public LikeResponse(Long id, LocalDateTime createdAt, LocalDateTime updatedAt, Long restaurantId, String restaurantName, String address, double avgRating, long reviewCount, Long categoryId, String categoryName) {
+    public LikeResponse(Long id, LocalDateTime createdAt, LocalDateTime updatedAt, Long restaurantId, String restaurantName, String address, String imageUrl, double avgRating, long reviewCount, Long categoryId, String categoryName) {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
         this.address = address;
+        this.imageUrl = imageUrl;
         this.avgRating = avgRating;
         this.reviewCount = reviewCount;
         this.categoryId = categoryId;

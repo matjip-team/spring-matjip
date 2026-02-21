@@ -30,7 +30,6 @@ public class BoardController {
     private final BoardRecommendationService boardRecommendationService;
     private final BoardCommandService boardCommandService;
     private final BoardReportService boardReportService;
-
     @GetMapping
     public ApiResponse<BoardPageResponse> getBoards(
             @RequestParam(required = false) BoardType type,

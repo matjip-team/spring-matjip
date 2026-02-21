@@ -15,6 +15,7 @@ public class RestaurantDetailDTO {
     private Long id;
     private String name;
     private String address;
+    private String phone;
     private String description;
     private String imageUrl;
 
@@ -41,6 +42,7 @@ public class RestaurantDetailDTO {
                 .id(restaurant.getId())
                 .name(restaurant.getName())
                 .address(restaurant.getAddress())
+                .phone(restaurant.getPhone())
                 .description(restaurant.getDescription())
                 .imageUrl(restaurant.getImageUrl())
                 .categories(
