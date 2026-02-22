@@ -75,7 +75,7 @@ public class SecurityConfig {
                                 // 2. 보호할 auth 경로
                                 .requestMatchers(
                                         "/api/register/**",
-                                    "/api/auth/mypage/**"
+                                    "/api/mypage/**"
                                 ).authenticated()
                                 // 3. 공개 경로
                                 .requestMatchers(
