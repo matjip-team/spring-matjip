@@ -2,6 +2,7 @@ package com.restaurant.matjip.ai.client;
 
 import com.restaurant.matjip.ai.dto.AiRecommendRequest;
 import com.restaurant.matjip.ai.dto.AiRecommendResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -10,9 +11,9 @@ public class AiClient {
 
     private final WebClient webClient;
 
-    public AiClient() {
+    public AiClient(@Value("${ai.base-url:http://localhost:8000}") String baseUrl) {
         this.webClient = WebClient.builder()
-                .baseUrl("http://localhost:8000")
+                .baseUrl(baseUrl)
                 .build();
     }
 

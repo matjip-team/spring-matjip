@@ -2,6 +2,7 @@ package com.restaurant.matjip.global.config;
 
 import com.restaurant.matjip.global.component.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +20,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * SecurityConfig 클래스
@@ -33,6 +36,9 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    @Value("${cors.allowed-origins:http://localhost:5173}")
+    private String corsAllowedOrigins;
 
     //Spring Security 필터로, 요청마다 JWT를 확인하고 인증 정보를 SecurityContext에 세팅하는 역할
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -107,7 +113,11 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // 리액트 주소
+        List<String> origins = Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        configuration.setAllowedOrigins(origins); // 개발: localhost:5173, 운영: application-prod.yml에서 설정
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")); // 허용할 메소드 목록
         // 클라이언트가 서버에 요청시 모든 요청 정보를 허용하겠습니다.(JWT 쓰면 이설정 필수)
         configuration.setAllowedHeaders(List.of("*"));
