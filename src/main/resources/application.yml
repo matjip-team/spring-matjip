@@ -25,7 +25,7 @@ aws:
     bucket: ${AWS_S3_BUCKET}
 
 jpa:
-  defer-datasource-initialization: true #JPA가 엔티티 매핑 후 테이블 생성(update) 완료 → 그 다음 schema.sql / data.sql 실행
+  defer-datasource-initialization: false #JPA가 엔티티 매핑 후 테이블 생성(update) 완료 → 그 다음 schema.sql / data.sql 실행
 
 # JWT
 jwt:
