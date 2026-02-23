@@ -48,6 +48,12 @@ public class Board extends BaseEntity {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    @Column(name = "hidden", nullable = false)
+    private boolean hidden = false;
+
+    @Column(name = "report_count", nullable = false)
+    private int reportCount = 0;
+
     /* ================== 연관 관계 ================== */
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -74,6 +80,24 @@ public class Board extends BaseEntity {
     public void decreaseRecommendCount() {
         if (this.recommendCount > 0) {
             this.recommendCount--;
+        }
+    }
+
+    public void hide() {
+        this.hidden = true;
+    }
+
+    public void restore() {
+        this.hidden = false;
+    }
+
+    public void increaseReportCount() {
+        this.reportCount++;
+    }
+
+    public void decreaseReportCount() {
+        if (this.reportCount > 0) {
+            this.reportCount--;
         }
     }
 }

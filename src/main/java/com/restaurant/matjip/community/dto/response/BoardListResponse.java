@@ -20,6 +20,7 @@ public class BoardListResponse {
     private Long id;
     private BoardType boardType;
     private String title;
+    private Long authorId;
     private String authorNickname;
     private int viewCount;
     private int recommendCount;
@@ -27,6 +28,8 @@ public class BoardListResponse {
     private int commentCount;
     private boolean hasImage;
     private boolean hasVideo;
+    private boolean hidden;
+    private int reportCount;
 
     public static BoardListResponse from(Board board, int commentCount) {
         String content = board.getContent() == null ? "" : board.getContent();
@@ -37,13 +40,16 @@ public class BoardListResponse {
                 board.getId(),
                 board.getBoardType(),
                 board.getTitle(),
+                board.getUser().getId(),
                 board.getUser().getNickname(),
                 board.getViewCount(),
                 board.getRecommendCount(),
                 board.getCreatedAt(),
                 commentCount,
                 hasImage,
-                hasVideo
+                hasVideo,
+                board.isHidden(),
+                board.getReportCount()
         );
     }
 

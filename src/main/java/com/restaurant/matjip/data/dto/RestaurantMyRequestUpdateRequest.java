@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class RestaurantCreateRequest {
+public class RestaurantMyRequestUpdateRequest {
 
     @NotBlank(message = "Restaurant name is required")
     private String name;
@@ -22,9 +22,6 @@ public class RestaurantCreateRequest {
     private String phone;
     private String description;
     private String imageUrl;
-
-    @NotBlank(message = "Business license file is required")
     private String businessLicenseFileKey;
-
     private List<String> categoryNames;
 }

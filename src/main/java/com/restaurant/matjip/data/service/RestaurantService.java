@@ -22,8 +22,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,7 +38,7 @@ public class RestaurantService {
 
     private final ReviewRepository reviewRepository;
 
-    // 좋아요
+    // 醫뗭븘??
     private final RestaurantLikeRepository likeRepository;
     private final UserRepository userRepository;
 
@@ -45,7 +47,7 @@ public class RestaurantService {
     private final RestaurantLicenseFileService restaurantLicenseFileService;
 
     /* =====================================================
-       🔥 목록 조회 (페이징 + 좋아요 포함)
+       ?뵦 紐⑸줉 議고쉶 (?섏씠吏?+ 醫뗭븘???ы븿)
     ===================================================== */
     public Page<RestaurantListDTO> search(
             RestaurantSearchRequest request,
@@ -92,7 +94,7 @@ public class RestaurantService {
     }
 
     /* =====================================================
-       🔥 지도 조회
+       ?뵦 吏??議고쉶
     ===================================================== */
     public List<RestaurantMapDTO> searchForMap(
             RestaurantSearchRequest request
@@ -124,6 +126,7 @@ public class RestaurantService {
                 .longitude(request.getLongitude())
                 .phone(blankToNull(request.getPhone()))
                 .description(blankToNull(request.getDescription()))
+                .imageUrl(blankToNull(request.getImageUrl()))
                 .businessLicenseFileUrl(request.getBusinessLicenseFileKey().trim())
                 .source("USER")
                 .approvalStatus(RestaurantApprovalStatus.PENDING)
@@ -136,15 +139,26 @@ public class RestaurantService {
     }
 
     /* =====================================================
-       🔥 상세 조회
+       ?뵦 ?곸꽭 議고쉶
     ===================================================== */
     @Transactional(readOnly = true)
     public RestaurantDetailDTO getDetail(Long id, String currentUserEmail) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("해당 맛집이 존재하지 않습니다. id=" + id)
+                        new IllegalArgumentException("?대떦 留쏆쭛??議댁옱?섏? ?딆뒿?덈떎. id=" + id)
                 );
 
+        if (restaurant.getApprovalStatus() != RestaurantApprovalStatus.APPROVED) {
+            if (currentUserEmail == null) {
+                throw new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND);
+            }
+
+            User currentUser = userRepository.findByEmail(currentUserEmail).orElse(null);
+            boolean isAdmin = currentUser != null && currentUser.getRole() == UserRole.ADMIN;
+            if (!isAdmin) {
+                throw new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND);
+            }
+        }
         Double avg = reviewRepository.findAverageRating(id);
         double averageRating = avg == null
                 ? 0.0
@@ -190,7 +204,12 @@ public class RestaurantService {
 
 
     @Transactional
-    public void updateApprovalStatus(Long restaurantId, RestaurantApprovalStatus status, Long adminUserId) {
+    public void updateApprovalStatus(
+            Long restaurantId,
+            RestaurantApprovalStatus status,
+            String rejectedReason,
+            Long adminUserId
+    ) {
         assertAdmin(adminUserId);
 
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
@@ -201,6 +220,14 @@ public class RestaurantService {
         }
 
         restaurant.setApprovalStatus(status);
+        if (status == RestaurantApprovalStatus.REJECTED) {
+            if (!StringUtils.hasText(rejectedReason)) {
+                throw new IllegalArgumentException("Rejected reason is required when status is REJECTED");
+            }
+            restaurant.setRejectedReason(rejectedReason.trim());
+        } else {
+            restaurant.setRejectedReason(null);
+        }
         restaurantLicenseFileService.deleteObject(restaurant.getBusinessLicenseFileUrl());
         restaurant.setBusinessLicenseFileUrl(null);
     }
@@ -227,18 +254,61 @@ public class RestaurantService {
     ) {
         assertAdmin(adminUserId);
 
-        return restaurantRepository.findAllByApprovalStatusOrderByCreatedAtDesc(status)
+        return restaurantRepository.findAllByApprovalStatusAndSourceOrderByCreatedAtDesc(status, "USER")
                 .stream()
-                .map(RestaurantAdminListDTO::from)
+                .map(restaurant -> RestaurantAdminListDTO.from(
+                        restaurant,
+                        toRequestImageViewUrl(restaurant.getImageUrl())
+                ))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RestaurantAdminDetailDTO getRequestDetailForAdmin(Long restaurantId, Long adminUserId) {
+        assertAdmin(adminUserId);
+
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        return RestaurantAdminDetailDTO.from(
+                restaurant,
+                toRequestImageViewUrl(restaurant.getImageUrl())
+        );
     }
 
     @Transactional(readOnly = true)
     public List<RestaurantMyRequestDTO> getMyRequests(Long userId) {
         return restaurantRepository.findAllByRegisteredByIdOrderByCreatedAtDesc(userId)
                 .stream()
-                .map(RestaurantMyRequestDTO::from)
+                .map(restaurant -> RestaurantMyRequestDTO.from(
+                        restaurant,
+                        toRequestImageViewUrl(restaurant.getImageUrl())
+                ))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public RestaurantMyRequestDetailDTO getMyRequestDetail(Long requestId, Long userId) {
+        Restaurant restaurant = restaurantRepository.findByIdAndRegisteredById(requestId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        return RestaurantMyRequestDetailDTO.from(
+                restaurant,
+                toRequestImageViewUrl(restaurant.getImageUrl())
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public String getMyRequestLicenseViewUrl(Long requestId, Long userId) {
+        Restaurant restaurant = restaurantRepository.findByIdAndRegisteredById(requestId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        String fileKey = restaurant.getBusinessLicenseFileUrl();
+        if (fileKey == null || fileKey.isBlank()) {
+            throw new IllegalArgumentException("No business license file found");
+        }
+
+        return restaurantLicenseFileService.createPresignedViewUrl(fileKey);
     }
 
     @Transactional
@@ -250,15 +320,45 @@ public class RestaurantService {
             throw new BusinessException(ErrorCode.RESTAURANT_REQUEST_NOT_PENDING);
         }
 
-        restaurant.setApprovalStatus(RestaurantApprovalStatus.CANCELLED);
-        restaurantLicenseFileService.deleteObject(restaurant.getBusinessLicenseFileUrl());
-        restaurant.setBusinessLicenseFileUrl(null);
+        String fileKey = restaurant.getBusinessLicenseFileUrl();
+        if (fileKey != null && !fileKey.isBlank()) {
+            restaurantLicenseFileService.deleteObject(fileKey);
+        }
+
+        restaurantRepository.delete(restaurant);
+    }
+
+    @Transactional
+    public void updateMyRequest(Long requestId, RestaurantMyRequestUpdateRequest request, Long userId) {
+        Restaurant restaurant = restaurantRepository.findByIdAndRegisteredById(requestId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESTAURANT_NOT_FOUND));
+
+        if (restaurant.getApprovalStatus() != RestaurantApprovalStatus.PENDING) {
+            throw new BusinessException(ErrorCode.RESTAURANT_REQUEST_NOT_PENDING);
+        }
+
+        restaurant.setName(request.getName().trim());
+        restaurant.setAddress(request.getAddress().trim());
+        restaurant.setLatitude(request.getLatitude());
+        restaurant.setLongitude(request.getLongitude());
+        restaurant.setPhone(blankToNull(request.getPhone()));
+        restaurant.setDescription(blankToNull(request.getDescription()));
+        restaurant.setImageUrl(blankToNull(request.getImageUrl()));
+        String nextBusinessLicenseFileKey = blankToNull(request.getBusinessLicenseFileKey());
+        String currentBusinessLicenseFileKey = restaurant.getBusinessLicenseFileUrl();
+        if (StringUtils.hasText(nextBusinessLicenseFileKey)
+                && !nextBusinessLicenseFileKey.equals(currentBusinessLicenseFileKey)) {
+            restaurant.setBusinessLicenseFileUrl(nextBusinessLicenseFileKey);
+            restaurantLicenseFileService.deleteObject(currentBusinessLicenseFileKey);
+        }
+
+        restaurant.getCategories().clear();
+        applyCategories(restaurant, request.getCategoryNames());
     }
 
 
-
     /* =====================================================
-       🔥 Python 수집 기능 (복구 완료)
+       ?뵦 Python ?섏쭛 湲곕뒫 (蹂듦뎄 ?꾨즺)
     ===================================================== */
     @Transactional
     public void collectFromPython() {
@@ -374,4 +474,57 @@ public class RestaurantService {
             throw new BusinessException(ErrorCode.FORBIDDEN_ERROR);
         }
     }
+
+    private String toRequestImageViewUrl(String imageUrl) {
+        if (!StringUtils.hasText(imageUrl)) {
+            return null;
+        }
+
+        String key = extractS3ObjectKey(imageUrl);
+        if (!StringUtils.hasText(key)) {
+            return imageUrl.trim();
+        }
+
+        try {
+            return restaurantLicenseFileService.createPresignedViewUrl(key);
+        } catch (Exception ignored) {
+            return imageUrl.trim();
+        }
+    }
+
+    private String extractS3ObjectKey(String imageUrl) {
+        String raw = imageUrl == null ? "" : imageUrl.trim();
+        if (raw.isBlank()) {
+            return null;
+        }
+
+        if (raw.startsWith("http://") || raw.startsWith("https://")) {
+            try {
+                URI uri = URI.create(raw);
+                String host = uri.getHost();
+                if (host == null || !host.contains("amazonaws.com")) {
+                    return null;
+                }
+
+                String path = uri.getPath();
+                if (path == null || path.isBlank()) {
+                    return null;
+                }
+
+                return path.startsWith("/") ? path.substring(1) : path;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        if (raw.startsWith("/")) {
+            return null;
+        }
+
+        return raw;
+    }
 }
+
+
+
+

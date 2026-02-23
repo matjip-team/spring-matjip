@@ -12,14 +12,16 @@ import com.restaurant.matjip.community.repository.BoardRepository;
 import com.restaurant.matjip.community.repository.BoardViewRepository;
 import com.restaurant.matjip.community.repository.CommentRepository;
 import com.restaurant.matjip.global.common.CustomUserDetails;
+import com.restaurant.matjip.global.exception.BusinessException;
+import com.restaurant.matjip.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +32,6 @@ public class BoardQueryService {
     private final BoardRecommendationRepository boardRecommendationRepository;
     private final CommentRepository commentRepository;
 
-    /* ================== 게시글 목록 조회 ================== */
-
     @Transactional(readOnly = true)
     public BoardPageResponse getBoards(
             BoardType type,
@@ -40,53 +40,42 @@ public class BoardQueryService {
             Pageable pageable
     ) {
 
-        List<BoardListResponse> notices =
-                boardRepository.findByBoardTypeOrderByIdDesc(BoardType.NOTICE)
-                        .stream()
-                        .map(board -> {
-                            int count = commentRepository.countByBoardIdAndDeletedFalse(board.getId());
-                            return BoardListResponse.from(board, count);
-                        })
-                        .toList();
+        var notices = boardRepository.findByBoardTypeOrderByIdDesc(BoardType.NOTICE)
+                .stream()
+                .map(board -> {
+                    int count = commentRepository.countByBoardIdAndDeletedFalse(board.getId());
+                    return BoardListResponse.from(board, count);
+                })
+                .toList();
 
         Page<Board> page;
 
         switch (searchType) {
-            case TITLE ->
-                    page = boardRepository.searchTitle(type, keyword, pageable);
-
-            case CONTENT ->
-                    page = boardRepository.searchContent(type, keyword, pageable);
-
-            case AUTHOR ->
-                    page = boardRepository.searchAuthor(type, keyword, pageable);
-
-            case COMMENT ->
-                    page = boardRepository.searchComment(type, keyword, pageable);
-
-            default ->
-                    page = boardRepository.searchNormalBoards(type, keyword, pageable);
+            case TITLE -> page = boardRepository.searchTitle(type, keyword, pageable);
+            case CONTENT -> page = boardRepository.searchContent(type, keyword, pageable);
+            case AUTHOR -> page = boardRepository.searchAuthor(type, keyword, pageable);
+            case COMMENT -> page = boardRepository.searchComment(type, keyword, pageable);
+            default -> page = boardRepository.searchNormalBoards(type, keyword, pageable);
         }
 
-        Page<BoardListResponse> normalPage =
-                page.map(board -> {
-                    int count = commentRepository.countByBoardIdAndDeletedFalse(board.getId());
-                    return BoardListResponse.from(board, count);
-                });
+        var normalPage = page.map(board -> {
+            int count = commentRepository.countByBoardIdAndDeletedFalse(board.getId());
+            return BoardListResponse.from(board, count);
+        });
+
         return new BoardPageResponse(notices, normalPage);
     }
-
-
-    /* ================== 게시글 상세 조회 + 조회수 처리 ================== */
 
     @Transactional
     public BoardDetailResponse getDetail(Long boardId, CustomUserDetails userDetails) {
 
-        // 게시글 조회
         Board board = boardRepository.findById(boardId)
-                .orElseThrow();
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOARD_NOT_FOUND));
 
-        // 🔹 비로그인 유저 → 그냥 조회수 증가
+        if (board.isHidden() && !canAccessHiddenBoard(board, userDetails)) {
+            throw new BusinessException(ErrorCode.BOARD_NOT_FOUND);
+        }
+
         if (userDetails == null) {
             board.increaseViewCount();
             int commentCount = commentRepository.countByBoardIdAndDeletedFalse(boardId);
@@ -95,9 +84,7 @@ public class BoardQueryService {
 
         Long userId = userDetails.getId();
 
-        // 🔹 로그인 유저 + 처음 보는 글일 때만 조회수 증가
         if (!boardViewRepository.existsByBoardIdAndUserId(boardId, userId)) {
-
             BoardView view = BoardView.builder()
                     .board(board)
                     .userId(userId)
@@ -108,11 +95,24 @@ public class BoardQueryService {
             board.increaseViewCount();
         }
 
-        boolean recommended =
-                boardRecommendationRepository.existsByBoardIdAndUserId(boardId, userId);
+        boolean recommended = boardRecommendationRepository.existsByBoardIdAndUserId(boardId, userId);
 
         int commentCount = commentRepository.countByBoardIdAndDeletedFalse(boardId);
         return new BoardDetailResponse(board, recommended, commentCount);
     }
-}
 
+    private boolean canAccessHiddenBoard(Board board, CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return false;
+        }
+
+        if (board.getUser().getId().equals(userDetails.getId())) {
+            return true;
+        }
+
+        return userDetails.getAuthorities() != null
+                && userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_ADMIN"::equals);
+    }
+}

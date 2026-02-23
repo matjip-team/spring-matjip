@@ -34,8 +34,7 @@ public interface ReviewRepository2 extends JpaRepository<Review, Long> {
      JOIN r.restaurant res
      LEFT JOIN res.categories c
      LEFT JOIN Review rv ON rv.restaurant.id = res.id
-     WHERE r.user.id = :userId
-       AND (:cursorId IS NULL OR r.id > :cursorId)
+     WHERE (:cursorId IS NULL OR r.id > :cursorId)
      GROUP BY r.id, r.createdAt, r.updatedAt,
               res.id, res.name, c.id, c.name
      ORDER BY r.id ASC
