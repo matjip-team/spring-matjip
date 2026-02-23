@@ -11,12 +11,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate           # 테이블 구조 검증만, 수정하지 않음
+      ddl-auto: update           # 테이블 구조 검증만, 수정하지 않음
     properties:
       hibernate:
         show_sql: false            # SQL 출력 X
         format_sql: false
-    defer-datasource-initialization: update
+    defer-datasource-initialization: false
 
   sql:
     init:
