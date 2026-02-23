@@ -1,9 +1,9 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   datasource:
-    url: jdbc:mysql://192.168.0.233:3306/hr_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://43.202.121.6:3306/matjip?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
     password: mysql
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -16,7 +16,7 @@ spring:
       hibernate:
         show_sql: false            # SQL 출력 X
         format_sql: false
-    defer-datasource-initialization: true
+    defer-datasource-initialization: update
 
   sql:
     init:
