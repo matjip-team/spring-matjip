@@ -14,7 +14,7 @@
           java-version: '21'
           distribution: 'temurin'  # AdoptOpenJDK/Temurin 사용 예시
       - name: Mvn Package
-        run: mvn clean package -B -DskipTests=true
+        run: mvn clean package -B -DskipTests
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USER }}" --password-stdin
       - name: Build Docker image
