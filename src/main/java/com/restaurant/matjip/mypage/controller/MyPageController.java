@@ -20,7 +20,7 @@ import java.util.Locale;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/mypage")
+@RequestMapping("/api/spring/mypage")
 @RequiredArgsConstructor
 public class MyPageController {
     private final MyPageService myPageService;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/admin")
+@RequestMapping("/api/spring/admin")
 public class AdminCollectController {
 
     private final RestaurantService restaurantService;

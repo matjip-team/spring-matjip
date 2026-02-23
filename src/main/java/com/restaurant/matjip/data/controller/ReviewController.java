@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/restaurants/{restaurantId}/reviews")
+@RequestMapping("/api/spring/restaurants/{restaurantId}/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
 

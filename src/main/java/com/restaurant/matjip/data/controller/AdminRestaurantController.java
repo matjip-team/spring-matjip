@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/restaurants")
+@RequestMapping("/api/spring/admin/restaurants")
 @RequiredArgsConstructor
 public class AdminRestaurantController {
 

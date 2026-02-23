@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
  * 회원 관리 API (ROLE_ADMIN 전용)
  */
 @RestController
-@RequestMapping("/api/admin/users")
+@RequestMapping("/api/spring/admin/users")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {

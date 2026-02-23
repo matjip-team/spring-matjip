@@ -71,11 +71,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth
                                 // 1. 관리자 먼저 (구체적인 것부터)
-                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/spring/admin/**").hasRole("ADMIN")
                                 // 2. 보호할 auth 경로
                                 .requestMatchers(
-                                        "/api/register/**",
-                                    "/api/mypage/**"
+                                        "/api/spring/register/**",
+                                    "/api/spring/mypage/**"
                                 ).authenticated()
                                 // 3. 공개 경로
                                 .requestMatchers(
