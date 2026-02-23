@@ -1,0 +1,18 @@
+package com.restaurant.matjip.data.repository;
+
+import com.restaurant.matjip.data.domain.Review;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface ReviewRepository extends JpaRepository<Review, Long> {
+
+    List<Review> findByRestaurant_Id(Long restaurantId);
+
+    Optional<Review> findByIdAndUser_Id(Long reviewId, Long userId);
+
+    @Query("select avg(r.rating) from Review r where r.restaurant.id = :restaurantId")
+    Double findAverageRating(Long restaurantId);
+}

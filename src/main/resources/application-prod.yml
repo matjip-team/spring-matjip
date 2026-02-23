@@ -1,0 +1,35 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://43.202.121.6:3306/matjip?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: mysql
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    database-platform: org.hibernate.dialect.MySQL8Dialect #사용할 DB 종류와 버전
+
+  jpa:
+    hibernate:
+      ddl-auto: update           # 테이블 구조 검증만, 수정하지 않음
+    properties:
+      hibernate:
+        show_sql: false            # SQL 출력 X
+        format_sql: false
+    defer-datasource-initialization: false
+
+  sql:
+    init:
+      mode: never                   # 초기화 안 함
+
+  devtools:
+    restart:
+      enabled: false                # DevTools 비활성화
+    livereload:
+      enabled: false                # LiveReload 비활성화
+
+logging:
+  level:
+    root: info #기본 로그 레벨
+    org.hibernate.SQL: warn #운영에선 경고만
+    org.hibernate.type.descriptor.sql: warn #운영에선 경고만
