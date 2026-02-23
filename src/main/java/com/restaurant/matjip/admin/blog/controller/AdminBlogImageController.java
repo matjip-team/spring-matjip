@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin/blogs/images")
+@RequestMapping("/api/spring/admin/blogs/images")
 @RequiredArgsConstructor
 public class AdminBlogImageController {
 

@@ -22,7 +22,7 @@ import java.util.List;
  * 작성일: 2026-01-29
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/spring/users")
 @RequiredArgsConstructor
 public class UserController {
 

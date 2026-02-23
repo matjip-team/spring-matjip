@@ -21,7 +21,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 @RestController
-@RequestMapping("/api/restaurants/licenses")
+@RequestMapping("/api/spring/restaurants/licenses")
 @RequiredArgsConstructor
 public class RestaurantLicenseController {
 

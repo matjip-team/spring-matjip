@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/boards/{boardId}/comments")
+@RequestMapping("/api/spring/boards/{boardId}/comments")
 public class CommentController {
 
     private final CommentService commentService;
