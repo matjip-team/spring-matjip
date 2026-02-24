@@ -1,6 +1,14 @@
 # application.yml - 공통 설정
 server:
   port: 9000
+
+# CORS 허용 Origin (쉼표로 여러 개 가능, 프로필별에서 오버라이드)
+cors:
+  allowed-origins: http://localhost:5173
+
+# AI 추천 서비스 URL (프로필별에서 오버라이드)
+ai:
+  base-url: http://localhost:8000
 #  error:
 #    include-stacktrace: never
 #    include-message: always

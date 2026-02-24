@@ -17,6 +17,7 @@ import com.restaurant.matjip.users.constant.UserRole;
 import com.restaurant.matjip.users.domain.User;
 import com.restaurant.matjip.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +33,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class RestaurantService {
+
+    @Value("${ai.base-url:http://localhost:8000}")
+    private String pythonCollectBaseUrl;
 
     private final RestaurantRepository restaurantRepository;
     private final CategoryRepository categoryRepository;
@@ -362,7 +366,7 @@ public class RestaurantService {
     ===================================================== */
     @Transactional
     public void collectFromPython() {
-        String url = "http://127.0.0.1:8000/collect";
+        String url = pythonCollectBaseUrl + "/api/fastapi/collect";
 
         String rawJson = restTemplate.postForObject(url, null, String.class);
 

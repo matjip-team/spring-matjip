@@ -1,6 +1,14 @@
 server:
   port: 8081
 
+# 개발 환경: React 개발 서버
+cors:
+  allowed-origins: http://localhost:5173
+
+# 개발: 로컬 AI 서버
+ai:
+  base-url: http://localhost:8000
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/matjip?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8

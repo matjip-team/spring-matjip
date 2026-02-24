@@ -53,7 +53,7 @@ public class User extends BaseEntity {
     @Column(nullable = true)
     private LocalDateTime deletedAt;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     private UserProfile userProfile;
 
     // 연관관계 편의 메서드
